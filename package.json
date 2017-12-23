@@ -4,7 +4,7 @@
 	"description": "Luxio Client",
 	"main": "src/index.js",
 	"scripts": {
-		"build": "rm -r dist > /dev/null 2>&1; mkdir dist; browserify src/index.js -o dist/luxio.js -t [ babelify --presets [ env ] ];",
+		"build": "rm -r dist > /dev/null 2>&1; mkdir dist; browserify src/index.js -o dist/luxio.js -t [ babelify --presets [ env ] ]; uglifyjs dist/luxio.js > dist/luxio.min.js;",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"author": "Emile Nijssen",
