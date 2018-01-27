@@ -1,6 +1,6 @@
 # Luxio
 
-[![Node version](https://img.shields.io/npm/v/luxio.svg)](https://www.npmjs.com/package/luxio) [![Node version](https://img.shields.io/node/v/luxio.svg)](http://nodejs.org/download/)
+[![Node version](https://img.shields.io/npm/v/luxio.svg)](https://www.npmjs.com/package/luxio) [![Build Status](https://travis-ci.org/WeeJeWel/node-luxio.svg?branch=master)](https://travis-ci.org/WeeJeWel/node-luxio)
 
 This is a JavaScript library to find and control [Luxio](http://www.luxio.lighting) Wi-Fi LED Strips. It supports use as a Node.js dependency, in the browser, and in the command line.
 
