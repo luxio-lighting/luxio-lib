@@ -8,6 +8,9 @@ before_install:
 - npm i -g uglify-js
 script:
 - npm run build
+before_deploy:
+  - git add -A
+  - git commit -m "build"
 deploy:
   - provider: npm
     email: emilenijssen@gmail.com
