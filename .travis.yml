@@ -18,6 +18,7 @@ deploy:
     email: emilenijssen@gmail.com
     skip_cleanup: true
     on:
+      tags: true
       branch: production
       repo: WeeJeWel/node-luxio
     api_key:
@@ -28,6 +29,7 @@ deploy:
       - dist/luxio.js
       - dist/luxio.min.js
     on:
+      tags: true
       branch: production
       repo: WeeJeWel/node-luxio
     api_key:
