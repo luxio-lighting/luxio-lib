@@ -9,8 +9,8 @@ before_install:
 script:
   - npm run build
 before_deploy:
-  - git add -A
-  - git commit -m "build"
+  - git add -A || :
+  - git commit -m "build" || :
   - export RELEASE_PKG_FILE=$(ls dist)
 deploy:
   - provider: npm
