@@ -29623,44 +29623,19 @@ var Device = function () {
 			});
 		}
 	}, {
-		key: 'on',
-		get: function get() {
-			return this._state.on === 'true';
-		},
-		set: function set(value) {
-			if (typeof value !== 'boolean') throw new Error('Invalid type for on, expected: Boolean');
-
-			this._propsChanged['on'] = value.toString();
-		}
-	}, {
-		key: 'brightness',
-		get: function get() {
-			return parseInt(this._state.brightness) / 255;
-		},
-		set: function set(value) {
-			if (typeof value !== 'number') throw new Error('Invalid type for brightness, expected: Number');
-
-			this._propsChanged['brightness'] = Math.ceil(value * 255).toString();
-		}
-	}, {
-		key: 'effect',
-		get: function get() {
-			return this._state.effect;
-		},
-		set: function set(value) {
-			if (typeof value !== 'string') throw new Error('Invalid type for brightness, expected: String');
-
-			this._propsChanged['effect'] = value;
-		}
-	}, {
-		key: 'mode',
-		get: function get() {
-			return this._state.mode;
-		}
-	}, {
 		key: 'version',
 		get: function get() {
 			return parseInt(this._opts.version);
+		}
+	}, {
+		key: 'lastseen',
+		get: function get() {
+			return new Date(this._opts.lastseen * 1000);
+		}
+	}, {
+		key: 'address',
+		get: function get() {
+			return this._opts.address;
 		}
 	}, {
 		key: 'name',
@@ -29673,18 +29648,57 @@ var Device = function () {
 			this._propsChanged['name'] = value;
 		}
 	}, {
+		key: 'mode',
+		get: function get() {
+			return this._state.mode;
+		}
+	}, {
 		key: 'pixels',
 		get: function get() {
-			return parseInt(this._state.pixels) || this._opts.pixels;
+			return this._opts.pixels;
 		},
 		set: function set(value) {
 			if (typeof value !== 'number') throw new Error('Invalid type for pixels, expected: Number');
 
-			this._propsChanged['pixels'] = value;
+			this._propsChanged['pixels'] = value.toString();
+		}
+	}, {
+		key: 'on',
+		get: function get() {
+			if (typeof this._state.on === 'undefined') return null;
+			return this._state.on === 'true';
+		},
+		set: function set(value) {
+			if (typeof value !== 'boolean') throw new Error('Invalid type for on, expected: Boolean');
+
+			this._propsChanged['on'] = value.toString();
+		}
+	}, {
+		key: 'brightness',
+		get: function get() {
+			if (typeof this._state.brightness === 'undefined') return null;
+			return parseInt(this._state.brightness) / 255;
+		},
+		set: function set(value) {
+			if (typeof value !== 'number') throw new Error('Invalid type for brightness, expected: Number');
+
+			this._propsChanged['brightness'] = Math.ceil(value * 255).toString();
+		}
+	}, {
+		key: 'effect',
+		get: function get() {
+			if (typeof this._state.effect === 'undefined') return null;
+			return this._state.effect;
+		},
+		set: function set(value) {
+			if (typeof value !== 'string') throw new Error('Invalid type for brightness, expected: String');
+
+			this._propsChanged['effect'] = value;
 		}
 	}, {
 		key: 'gradient',
 		get: function get() {
+			if (typeof this._state.gradient_source === 'undefined') return null;
 			return this._state.gradient_source.split(',').map(function (color) {
 				return '#' + color;
 			});

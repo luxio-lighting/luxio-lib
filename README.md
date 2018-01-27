@@ -1,23 +1,60 @@
 # Luxio
 
-This is a JavaScript library to find and control [Luxio](http://www.luxio.lighting) Wi-Fi LED Strips.
+[![Node version](https://img.shields.io/npm/v/luxio.svg)](https://www.npmjs.com/package/luxio) [![Node version](https://img.shields.io/node/v/luxio.svg)](http://nodejs.org/download/)
+
+This is a JavaScript library to find and control [Luxio](http://www.luxio.lighting) Wi-Fi LED Strips. It supports use as a Node.js dependency, in the browser, and in the command line.
 
 ## Installation
 
 ### Node.js
+
+In your project folder:
+
 ```
 $ npm install luxio
 ```
 
 ### Browser
 
-Using a Script tag:
+Using a script tag:
 
 ```html
-<script type="text/javascript" src="./dist/luxio.js"></script>
+<script type="text/javascript" src="./dist/luxio.min.js"></script>
+```
+
+### Command line
+```
+$ npm install -g luxio
 ```
 
 ## Usage
+
+### Command Line
+
+```bash
+$ luxio --help
+
+  Usage: luxio [options] [command]
+
+
+  Options:
+
+    -V, --version  output the version number
+    -h, --help     output usage information
+
+
+  Commands:
+
+    discover    Discover all Luxio devices on your network
+    on          Turn a Luxio device on or off
+    brightness  Set the brightness of a Luxio device
+    gradient    Set a gradient on a Luxio device
+    effect      Set an effect on a Luxio device
+    name        Set the name of a Luxio device
+    pixels      Set the pixel count of a Luxio device
+    restart     Restart a Luxio device
+    help [cmd]  display help for [cmd]
+```
 
 ### Node.js
 
@@ -99,3 +136,6 @@ discovery.getDevices()
 	.catch( console.error )
 </script>
 ```
+
+## Documentation
+Available at [https://pages.github.io/weejewel/node-luxio](https://pages.github.io/weejewel/node-luxio)

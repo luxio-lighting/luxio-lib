@@ -11,7 +11,7 @@ class Device {
 			value: id,
 			enumerable: true,
 		});
-		
+				
 		this._opts = {};
 		
 		for( let key in opts ) {
@@ -65,45 +65,16 @@ class Device {
 		return resultObj;
 	}
 	
-	get on() {
-		return this._state.on === 'true';
-	}
-	
-	set on( value ) {
-		if( typeof value !== 'boolean' )
-			throw new Error('Invalid type for on, expected: Boolean');
-		
-		this._propsChanged['on'] = value.toString();
-	}
-	
-	get brightness() {
-		return parseInt(this._state.brightness) / 255;
-	}
-	
-	set brightness( value ) {
-		if( typeof value !== 'number' )
-			throw new Error('Invalid type for brightness, expected: Number');
-		
-		this._propsChanged['brightness'] = Math.ceil(value * 255).toString();
-	}
-	
-	get effect() {
-		return this._state.effect;
-	}
-	
-	set effect( value ) {
-		if( typeof value !== 'string' )
-			throw new Error('Invalid type for brightness, expected: String');
-		
-		this._propsChanged['effect'] = value;
-	}
-	
-	get mode() {
-		return this._state.mode;
-	}
-	
 	get version() {
 		return parseInt(this._opts.version);
+	}
+	
+	get lastseen() {
+		return new Date(this._opts.lastseen * 1000);
+	}
+	
+	get address() {
+		return this._opts.address;
 	}
 	
 	get name() {
@@ -117,18 +88,59 @@ class Device {
 		this._propsChanged['name'] = value;		
 	}
 	
+	get mode() {
+		return this._state.mode;
+	}
+	
 	get pixels() {
-		return parseInt(this._state.pixels) || this._opts.pixels;
+		return this._opts.pixels;
 	}
 	
 	set pixels( value ) {
 		if( typeof value !== 'number' )
 			throw new Error('Invalid type for pixels, expected: Number');
 		
-		this._propsChanged['pixels'] = value;	
+		this._propsChanged['pixels'] = value.toString();	
+	}
+	
+	get on() {
+		if( typeof this._state.on === 'undefined' ) return null;
+		return this._state.on === 'true';
+	}
+	
+	set on( value ) {
+		if( typeof value !== 'boolean' )
+			throw new Error('Invalid type for on, expected: Boolean');
+		
+		this._propsChanged['on'] = value.toString();
+	}
+	
+	get brightness() {
+		if( typeof this._state.brightness === 'undefined' ) return null;
+		return parseInt(this._state.brightness) / 255;
+	}
+	
+	set brightness( value ) {
+		if( typeof value !== 'number' )
+			throw new Error('Invalid type for brightness, expected: Number');
+		
+		this._propsChanged['brightness'] = Math.ceil(value * 255).toString();
+	}
+	
+	get effect() {
+		if( typeof this._state.effect === 'undefined' ) return null;
+		return this._state.effect;
+	}
+	
+	set effect( value ) {
+		if( typeof value !== 'string' )
+			throw new Error('Invalid type for brightness, expected: String');
+		
+		this._propsChanged['effect'] = value;
 	}
 	
 	get gradient() {
+		if( typeof this._state.gradient_source === 'undefined' ) return null;
 		return this._state.gradient_source.split(',').map( color => `#${color}` );
 	}
 	
