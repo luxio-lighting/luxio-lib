@@ -138,4 +138,4 @@ discovery.getDevices()
 ```
 
 ## Documentation
-Available at [https://pages.github.io/weejewel/node-luxio](https://pages.github.io/weejewel/node-luxio)
+Available at [https://weejewel.github.io/node-luxio/](https://weejewel.github.io/node-luxio/)
