@@ -2,6 +2,9 @@ sudo: false
 language: node_js
 node_js:
   - 8
+branches:
+  only:
+    - production
 before_install:
   - npm i -g browserify
   - npm i -g babelify
@@ -12,7 +15,7 @@ before_deploy:
   - PACKAGE_VERSION=$(node -p -e "require('./package.json').version")
   - git add -A || true
   - git commit -m "build" || true
-  - git tag -a "v$PACKAGE_VERSION" -m "Version $PACKAGE_VERSION"
+  - git tag -a "v$PACKAGE_VERSION" -m "Version $PACKAGE_VERSION" || true
 deploy:
   - provider: npm
     email: emilenijssen@gmail.com
