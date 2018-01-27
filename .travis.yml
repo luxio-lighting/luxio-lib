@@ -1,10 +1,18 @@
 sudo: false
 language: node_js
 node_js:
-  - 8
+- 8
 before_install:
-  - npm i -g browserify
-  - npm i -g babelify
-  - npm i -g uglify-js
+- npm i -g browserify
+- npm i -g babelify
+- npm i -g uglify-js
 script:
-  - npm run build
+- npm run build
+deploy:
+  provider: npm
+  email: emilenijssen@gmail.com
+  api_key:
+    secure: RSvt+z8BoENbL0L7FuRKlQ5K2QL48Ej4iKMfeH4g/5f61OVgot5dQlide2MoxM9gvgi7CLGBI7/L7j4nTacSpMFKZT476wfRUHf5nake0uKkRJywD1d8bdSZHwCt2/erjfvcCokUroAeKSZwm+wGdmRzXVMECDVhhXpmddjUFZnX6N6x97ZXTCBeFGQf1Hc2I91u90IsQyY+9lANwbf4Lik34K7s33JDIpVk86JeVhPcaZNn+rVmS/Wj/3RFKehA93WyL8w2pLxp+tkXwdd0kYB07cJEiU6c2PAWFI4MqoDmvNUfl2ril+wZGwKv05x91ZgtFExO+KwVpwMSdIjdTJY5/9LePdJLrdbF0W4Phfa1bHifrvwTro/Isg03C2IrQO9CbeeNXmTKc0ncONpQ54tTmrMYOAOi23u0WflkjRQygahkxD7SLq4HsseWPMV1ngXrxVzhvLsK1DLp5WoS6vCjwRwUGXQqv05Ie9CSBNw+nJOx86Lf6UEHG3M+5c08wbkjOmK44tyveqXJHeKLzzPPHIH2BLyXDMCpfAbVnm/ozsiNphwJF1iiDY1X7KNJcAkMIPti/8gIfVobxEOl1HI8Sdluu1wEkD+uJXKMk63j/zdp3gaZ3hMHyAuj8rAhFnp0Iu7j4OWoKSAvJOFH8kfIl7sXIHWKvnapdxf34nw=
+  on:
+    branch: production
+    repo: WeeJeWel/node-luxio
