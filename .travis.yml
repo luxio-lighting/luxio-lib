@@ -3,6 +3,8 @@ language: node_js
 node_js:
   - 8
 before_install:
+  - npm i -g browserify
+  - npm i -g babelify
   - npm i -g uglify-js
 script:
   - npm run build
