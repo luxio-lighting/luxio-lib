@@ -22,6 +22,12 @@ Using a script tag:
 <script type="text/javascript" src="./dist/luxio.min.js"></script>
 ```
 
+Or use a CDN:
+
+```html
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/luxio@latest/dist/luxio.min.js"></script>
+```
+
 ### Command line
 ```
 $ npm install -g luxio
