@@ -13109,6 +13109,7 @@ Stream.prototype.pipe = function(dest, options) {
 },{"events":9,"inherits":12,"readable-stream/duplex.js":32,"readable-stream/passthrough.js":41,"readable-stream/readable.js":42,"readable-stream/transform.js":43,"readable-stream/writable.js":44}],47:[function(require,module,exports){
 (function (global){
 var ClientRequest = require('./lib/request')
+var IncomingMessage = require('./lib/response')
 var extend = require('xtend')
 var statusCodes = require('builtin-status-codes')
 var url = require('url')
@@ -13154,6 +13155,9 @@ http.get = function get (opts, cb) {
 	return req
 }
 
+http.ClientRequest = ClientRequest
+http.IncomingMessage = IncomingMessage
+
 http.Agent = function () {}
 http.Agent.defaultMaxSockets = 4
 
@@ -13188,9 +13192,13 @@ http.METHODS = [
 	'UNSUBSCRIBE'
 ]
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./lib/request":49,"builtin-status-codes":7,"url":53,"xtend":59}],48:[function(require,module,exports){
+},{"./lib/request":49,"./lib/response":50,"builtin-status-codes":7,"url":53,"xtend":59}],48:[function(require,module,exports){
 (function (global){
 exports.fetch = isFunction(global.fetch) && isFunction(global.ReadableStream)
+
+exports.writableStream = isFunction(global.WritableStream)
+
+exports.abortController = isFunction(global.AbortController)
 
 exports.blobConstructor = false
 try {
@@ -13303,9 +13311,8 @@ var ClientRequest = module.exports = function (opts) {
 
 	var preferBinary
 	var useFetch = true
-	if (opts.mode === 'disable-fetch' || 'timeout' in opts) {
-		// If the use of XHR should be preferred and includes preserving the 'content-type' header.
-		// Force XHR to be used since the Fetch API does not yet support timeouts.
+	if (opts.mode === 'disable-fetch' || ('requestTimeout' in opts && !capability.abortController)) {
+		// If the use of XHR should be preferred. Not typically needed.
 		useFetch = false
 		preferBinary = true
 	} else if (opts.mode === 'prefer-streaming') {
@@ -13367,7 +13374,9 @@ ClientRequest.prototype._onFinish = function () {
 	var headersObj = self._headers
 	var body = null
 	if (opts.method !== 'GET' && opts.method !== 'HEAD') {
-		if (capability.blobConstructor) {
+		if (capability.arraybuffer) {
+			body = toArrayBuffer(Buffer.concat(self._body))
+		} else if (capability.blobConstructor) {
 			body = new global.Blob(self._body.map(function (buffer) {
 				return toArrayBuffer(buffer)
 			}), {
@@ -13394,12 +13403,28 @@ ClientRequest.prototype._onFinish = function () {
 	})
 
 	if (self._mode === 'fetch') {
+		var signal = null
+		if (capability.abortController) {
+			var controller = new AbortController()
+			signal = controller.signal
+			self._fetchAbortController = controller
+
+			if ('requestTimeout' in opts && opts.requestTimeout !== 0) {
+				global.setTimeout(function () {
+					self.emit('requestTimeout')
+					if (self._fetchAbortController)
+						self._fetchAbortController.abort()
+				}, opts.requestTimeout)
+			}
+		}
+
 		global.fetch(self._opts.url, {
 			method: self._opts.method,
 			headers: headersList,
 			body: body || undefined,
 			mode: 'cors',
-			credentials: opts.withCredentials ? 'include' : 'same-origin'
+			credentials: opts.withCredentials ? 'include' : 'same-origin',
+			signal: signal
 		}).then(function (response) {
 			self._fetchResponse = response
 			self._connect()
@@ -13427,10 +13452,10 @@ ClientRequest.prototype._onFinish = function () {
 		if (self._mode === 'text' && 'overrideMimeType' in xhr)
 			xhr.overrideMimeType('text/plain; charset=x-user-defined')
 
-		if ('timeout' in opts) {
-			xhr.timeout = opts.timeout
+		if ('requestTimeout' in opts) {
+			xhr.timeout = opts.requestTimeout
 			xhr.ontimeout = function () {
-				self.emit('timeout')
+				self.emit('requestTimeout')
 			}
 		}
 
@@ -13526,8 +13551,8 @@ ClientRequest.prototype.abort = ClientRequest.prototype.destroy = function () {
 		self._response._destroyed = true
 	if (self._xhr)
 		self._xhr.abort()
-	// Currently, there isn't a way to truly abort a fetch.
-	// If you like bikeshedding, see https://github.com/whatwg/fetch/issues/27
+	else if (self._fetchAbortController)
+		self._fetchAbortController.abort()
 }
 
 ClientRequest.prototype.end = function (data, encoding, cb) {
@@ -13610,13 +13635,40 @@ var IncomingMessage = exports.IncomingMessage = function (xhr, response, mode) {
 		self.statusCode = response.status
 		self.statusMessage = response.statusText
 		
-		response.headers.forEach(function(header, key){
+		response.headers.forEach(function (header, key){
 			self.headers[key.toLowerCase()] = header
 			self.rawHeaders.push(key, header)
 		})
 
+		if (capability.writableStream) {
+			var writable = new WritableStream({
+				write: function (chunk) {
+					return new Promise(function (resolve, reject) {
+						if (self._destroyed) {
+							return
+						} else if(self.push(new Buffer(chunk))) {
+							resolve()
+						} else {
+							self._resumeFetch = resolve
+						}
+					})
+				},
+				close: function () {
+					if (!self._destroyed)
+						self.push(null)
+				},
+				abort: function (err) {
+					if (!self._destroyed)
+						self.emit('error', err)
+				}
+			})
 
-		// TODO: this doesn't respect backpressure. Once WritableStream is available, this can be fixed
+			try {
+				response.body.pipeTo(writable)
+				return
+			} catch (e) {} // pipeTo method isn't defined. Can't find a better way to feature test this
+		}
+		// fallback for when writableStream or pipeTo aren't available
 		var reader = response.body.getReader()
 		function read () {
 			reader.read().then(function (result) {
@@ -13629,11 +13681,11 @@ var IncomingMessage = exports.IncomingMessage = function (xhr, response, mode) {
 				self.push(new Buffer(result.value))
 				read()
 			}).catch(function(err) {
-				self.emit('error', err)
+				if (!self._destroyed)
+					self.emit('error', err)
 			})
 		}
 		read()
-
 	} else {
 		self._xhr = xhr
 		self._pos = 0
@@ -13677,7 +13729,15 @@ var IncomingMessage = exports.IncomingMessage = function (xhr, response, mode) {
 
 inherits(IncomingMessage, stream.Readable)
 
-IncomingMessage.prototype._read = function () {}
+IncomingMessage.prototype._read = function () {
+	var self = this
+
+	var resolve = self._resumeFetch
+	if (resolve) {
+		self._resumeFetch = null
+		resolve()
+	}
+}
 
 IncomingMessage.prototype._onXHRProgress = function () {
 	var self = this
@@ -29660,7 +29720,7 @@ var Device = function () {
 		set: function set(value) {
 			if (typeof value !== 'number') throw new Error('Invalid type for pixels, expected: Number');
 
-			this._propsChanged['pixels'] = value.toString();
+			this._propsChanged['pixels'] = this._opts.pixels = value.toString();
 		}
 	}, {
 		key: 'on',
@@ -29671,7 +29731,7 @@ var Device = function () {
 		set: function set(value) {
 			if (typeof value !== 'boolean') throw new Error('Invalid type for on, expected: Boolean');
 
-			this._propsChanged['on'] = value.toString();
+			this._propsChanged['on'] = this._state.on = value.toString();
 		}
 	}, {
 		key: 'brightness',
@@ -29682,7 +29742,7 @@ var Device = function () {
 		set: function set(value) {
 			if (typeof value !== 'number') throw new Error('Invalid type for brightness, expected: Number');
 
-			this._propsChanged['brightness'] = Math.ceil(value * 255).toString();
+			this._propsChanged['brightness'] = this._state.brightness = Math.ceil(value * 255).toString();
 		}
 	}, {
 		key: 'effect',
@@ -29693,7 +29753,7 @@ var Device = function () {
 		set: function set(value) {
 			if (typeof value !== 'string') throw new Error('Invalid type for brightness, expected: String');
 
-			this._propsChanged['effect'] = value;
+			this._propsChanged['effect'] = this._state.effect = value;
 		}
 	}, {
 		key: 'gradient',
@@ -29710,6 +29770,7 @@ var Device = function () {
 			var gradientPixels = this._createGradient(gradientSource);
 
 			this._propsChanged['gradient'] = gradientSource.join(',') + ';' + gradientPixels.join(',');
+			this._state.gradient_source = gradientSource;
 		}
 	}]);
 
