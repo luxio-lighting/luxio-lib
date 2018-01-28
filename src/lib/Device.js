@@ -100,7 +100,7 @@ class Device {
 		if( typeof value !== 'number' )
 			throw new Error('Invalid type for pixels, expected: Number');
 		
-		this._propsChanged['pixels'] = value.toString();	
+		this._propsChanged['pixels'] = this._opts.pixels = value.toString();	
 	}
 	
 	get on() {
@@ -112,7 +112,7 @@ class Device {
 		if( typeof value !== 'boolean' )
 			throw new Error('Invalid type for on, expected: Boolean');
 		
-		this._propsChanged['on'] = value.toString();
+		this._propsChanged['on'] = this._state.on = value.toString();
 	}
 	
 	get brightness() {
@@ -124,7 +124,7 @@ class Device {
 		if( typeof value !== 'number' )
 			throw new Error('Invalid type for brightness, expected: Number');
 		
-		this._propsChanged['brightness'] = Math.ceil(value * 255).toString();
+		this._propsChanged['brightness'] = this._state.brightness = Math.ceil(value * 255).toString();
 	}
 	
 	get effect() {
@@ -136,7 +136,7 @@ class Device {
 		if( typeof value !== 'string' )
 			throw new Error('Invalid type for brightness, expected: String');
 		
-		this._propsChanged['effect'] = value;
+		this._propsChanged['effect'] = this._state.effect = value;
 	}
 	
 	get gradient() {
@@ -152,6 +152,7 @@ class Device {
 		let gradientPixels = this._createGradient( gradientSource );
 			
 		this._propsChanged['gradient'] = `${gradientSource.join(',')};${gradientPixels.join(',')}`;
+		this._state.gradient_source = gradientSource;
 	}
 	
 	_createGradient( inputArray ) {
