@@ -100,7 +100,7 @@ class Device {
 		if( typeof value !== 'number' )
 			throw new Error('Invalid type for pixels, expected: Number');
 		
-		this._propsChanged['pixels'] = this._opts.pixels = value.toString();	
+		this._propsChanged['pixels'] = value.toString();	
 	}
 	
 	get on() {
