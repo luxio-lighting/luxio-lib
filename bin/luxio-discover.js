@@ -1,6 +1,7 @@
 'use strict';
 
 const cmd = require('commander')
+const timeago = require('timeago.js');
 const Discovery = require('..').Discovery;
 
 cmd.parse(process.argv)
@@ -14,7 +15,7 @@ discovery.getDevices().then( devices => {
 		console.log('-- Version:', device.version);
 		console.log('-- Address:', device.address);
 		console.log('-- Pixels:', device.pixels);
-		console.log('-- Last seen:', device.lastseen);
+		console.log('-- Last seen:', timeago().format(device.lastseen));
 		console.log('');
 	})
 })
