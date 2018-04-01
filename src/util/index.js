@@ -1,11 +1,13 @@
 'use strict';
 
-if( typeof window !== 'undefined' && typeof window.fetch === 'function' ) {
-	module.exports.fetch = window.fetch;
-} else if( typeof global !== 'undefined' && typeof global.fetch === 'function' ) {
-	module.exports.fetch = global.fetch;
-} else if( typeof fetch === 'function' ) {
-	module.exports.fetch = fetch;
-} else {
-	module.exports.fetch = require('node-fetch');
+module.exports.fetch = async function() {
+	if( typeof window !== 'undefined' && typeof window.fetch === 'function' ) {
+		return window.fetch;
+	} else if( typeof global !== 'undefined' && typeof global.fetch === 'function' ) {
+		return global.fetch;
+	} else if( typeof fetch === 'function' ) {
+		return fetch;
+	} else {
+		return require('node-fetch');
+	}
 }

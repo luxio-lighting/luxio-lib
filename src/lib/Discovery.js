@@ -8,7 +8,8 @@ const Device = require('./Device.js');
 class Discovery {
 	
 	getDevices() {
-		return fetch( nupnp.host )
+		return fetch()
+			.then( fetch => fetch( nupnp.host ) )
 			.then( result => result.json() )
 			.then( result => {
 				const devices = [];

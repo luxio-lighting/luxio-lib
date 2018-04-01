@@ -38,7 +38,8 @@ class Device {
 			...opts,
 		};
 		
-		return fetch( `http://${this._opts.address}/${path}`, opts )
+		return fetch()
+			.then( fetch => fetch(`http://${this._opts.address}/${path}`, opts) )
 			.then( res => {
 				if( !res.ok ) throw new Error(res.statusText || res.status);
 				return res;
