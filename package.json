@@ -9,11 +9,9 @@
 	},
 	"author": "Emile Nijssen",
 	"license": "GPL-3.0",
-	"repository" :
-		{
-			"type" : "git",
-			"url" : "https://github.com/luxio-lighting/luxio.js"
-		}
+	"repository": {
+		"type" : "git",
+		"url" : "https://github.com/luxio-lighting/luxio.js"
 	},
 	"dependencies": {
 		"babel-polyfill": "^6.26.0",
