@@ -1,5 +1,5 @@
 {
 	"nupnp": {
-		"host": "http://nupnp.luxio.lighting"
+		"host": "https://nupnp.luxio.lighting"
 	}
 }

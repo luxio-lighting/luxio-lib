@@ -23,6 +23,7 @@
 	},
 	"devDependencies": {
 		"babel-core": "^6.26.0",
+		"babel-plugin-transform-object-rest-spread": "^6.26.0",
 		"babel-preset-env": "^1.6.1",
 		"babelify": "^8.0.0",
 		"browserify": "^16.1.1",
@@ -32,6 +33,9 @@
 		"luxio": "bin/luxio.js"
 	},
 	"babel": {
+		"plugins": [
+			"transform-object-rest-spread"
+		],
 		"presets": [
 			[
 				"env",

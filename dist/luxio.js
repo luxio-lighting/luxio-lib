@@ -29817,7 +29817,7 @@ function extend() {
 },{}],417:[function(require,module,exports){
 module.exports={
 	"nupnp": {
-		"host": "http://nupnp.luxio.lighting"
+		"host": "https://nupnp.luxio.lighting"
 	}
 }
 
@@ -29836,7 +29836,11 @@ if (typeof window !== 'undefined') {
 },{"./lib/Device.js":419,"./lib/Discovery.js":420,"babel-polyfill":2}],419:[function(require,module,exports){
 'use strict';
 
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -29853,39 +29857,36 @@ var Device = function () {
 		});
 
 		this._opts = {};
+		this._state = {};
+		this._putQueue = {};
 
 		for (var key in opts) {
 			Object.defineProperty(this._opts, key, {
 				value: opts[key],
-				enumerable: true
+				enumerable: true,
+				writable: false
 			});
 		}
-
-		this._state = {
-			on: null,
-			brightness: null,
-			effect: null,
-			gradient_source: null,
-			gradient_pixels: null,
-			mode: null
-		};
-		this._propsChanged = {};
 	}
 
 	_createClass(Device, [{
 		key: '_fetch',
 		value: function _fetch(path, opts) {
-			opts = Object.assign({
+			opts = _extends({
 				method: 'GET',
 				body: undefined,
 				compress: false,
 				headers: {
-					'User-Agent': 'Luxio Client (JavaScript)'
+					'User-Agent': 'Luxio.js'
 				}
-			}, opts || {});
+			}, opts);
 
 			return fetch('http://' + this._opts.address + '/' + path, opts).then(function (res) {
-				return res.text();
+				if (!res.ok) throw new Error(res.statusText || res.status);
+				return res;
+			}).then(function (res) {
+				if (res.status === 200) return res.json();
+				return;
 			});
 		}
 	}, {
@@ -29896,18 +29897,8 @@ var Device = function () {
 			return this._fetch('state', {
 				method: 'GET'
 			}).then(function (result) {
-				_this._state = {};
-				result.split('\n').map(function (line) {
-					line = line.split('=');
-					_this._state[line[0]] = line[1];
-				});
+				_this._state = result;
 			});
-		}
-	}, {
-		key: '_parseResult',
-		value: function _parseResult(result) {
-			var resultObj = {};
-			return resultObj;
 		}
 	}, {
 		key: '_createGradient',
@@ -29934,27 +29925,42 @@ var Device = function () {
 		}
 	}, {
 		key: 'sync',
-		value: function sync() {
-			var _this2 = this;
+		value: function () {
+			var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+				var _this2 = this;
 
-			var promises = [];
+				return regeneratorRuntime.wrap(function _callee$(_context) {
+					while (1) {
+						switch (_context.prev = _context.next) {
+							case 0:
+								return _context.abrupt('return', Promise.all(Object.keys(this._putQueue).map(function (key) {
+									var value = _this2._putQueue[key];
+									var req = _this2._fetch(key, {
+										method: 'PUT',
+										body: JSON.stringify(value)
+									});
+									delete _this2._putQueue[key];
+									return req;
+								})).then(function () {
+									return _this2._getState();
+								}).then(function () {
+									return _this2;
+								}));
 
-			for (var key in this._propsChanged) {
-				var value = this._propsChanged[key];
-				var req = this._fetch(key, {
-					method: 'PUT',
-					body: value
-				});
-				promises.push(req);
-				delete this._propsChanged[key];
+							case 1:
+							case 'end':
+								return _context.stop();
+						}
+					}
+				}, _callee, this);
+			}));
+
+			function sync() {
+				return _ref.apply(this, arguments);
 			}
 
-			return Promise.all(promises).then(function () {
-				return _this2._getState();
-			}).then(function () {
-				return;
-			});
-		}
+			return sync;
+		}()
 	}, {
 		key: 'version',
 		get: function get() {
@@ -29978,72 +29984,90 @@ var Device = function () {
 		set: function set(value) {
 			if (typeof value !== 'string') throw new Error('Invalid type for name, expected: String');
 
-			this._propsChanged['name'] = value;
+			this._putQueue['name'] = { value: value };
+			this._state.name = value;
 		}
 	}, {
 		key: 'mode',
 		get: function get() {
+			if (this._state.mode === 'undefined') throw new Error('Device not synced');
+
 			return this._state.mode;
 		}
 	}, {
 		key: 'pixels',
 		get: function get() {
-			return this._opts.pixels;
+			return this._state.pixels || this._opts.pixels;
 		},
 		set: function set(value) {
 			if (typeof value !== 'number') throw new Error('Invalid type for pixels, expected: Number');
 
-			this._propsChanged['pixels'] = value.toString();
+			this._putQueue['pixels'] = { value: value };
+			this._state.pixels = value;
 		}
 	}, {
 		key: 'on',
 		get: function get() {
-			if (typeof this._state.on === 'undefined') return null;
+			if (typeof this._state.on === 'undefined') throw new Error('Device not synced');
+
 			return this._state.on === 'true';
 		},
 		set: function set(value) {
 			if (typeof value !== 'boolean') throw new Error('Invalid type for on, expected: Boolean');
 
-			this._propsChanged['on'] = this._state.on = value.toString();
+			this._putQueue['on'] = { value: value };
+			this._state.on = value;
 		}
 	}, {
 		key: 'brightness',
 		get: function get() {
-			if (typeof this._state.brightness === 'undefined') return null;
-			return parseInt(this._state.brightness) / 255;
+			if (typeof this._state.brightness === 'undefined') throw new Error('Device not synced');
+
+			return this._state.brightness;
 		},
 		set: function set(value) {
 			if (typeof value !== 'number') throw new Error('Invalid type for brightness, expected: Number');
 
-			this._propsChanged['brightness'] = this._state.brightness = Math.ceil(value * 255).toString();
+			this._putQueue['brightness'] = { value: value };
+			this._state.brightness = value;
 		}
 	}, {
 		key: 'effect',
 		get: function get() {
-			if (typeof this._state.effect === 'undefined') return null;
+			if (this._state.effect === 'undefined') throw new Error('Device not synced');
+
 			return this._state.effect;
 		},
 		set: function set(value) {
 			if (typeof value !== 'string') throw new Error('Invalid type for brightness, expected: String');
 
-			this._propsChanged['effect'] = this._state.effect = value;
+			this._putQueue['effect'] = { value: value };
+			this._state.effect = value;
 		}
 	}, {
 		key: 'gradient',
 		get: function get() {
-			if (typeof this._state.gradient_source === 'undefined') return null;
-			return this._state.gradient_source.split(',').map(function (color) {
+			if (this._state.gradient_source === 'undefined') throw new Error('Device not synced');
+
+			return this._state.gradient_source.map(function (color) {
 				return '#' + color;
 			});
 		},
 		set: function set(value) {
 			if (!Array.isArray(value)) throw new Error('Invalid type for gradient, expected: Array');
 
-			var gradientSource = value;
+			var gradientSource = value.map(function (color) {
+				if (color.charAt(0) === '#') return color.substring(1);
+				return color;
+			});
 			var gradientPixels = this._createGradient(gradientSource);
 
-			this._propsChanged['gradient'] = gradientSource.join(',') + ';' + gradientPixels.join(',');
+			this._putQueue['gradient'] = {
+				source: gradientSource,
+				pixels: gradientPixels
+			};
 			this._state.gradient_source = gradientSource;
+			this._state.gradient_pixels = gradientPixels;
 		}
 	}]);
 
@@ -30077,6 +30101,7 @@ var Discovery = function () {
 				var devices = [];
 				for (var id in result) {
 					var device = new Device(id, result[id]);
+					if (device.version < 20) continue;
 					devices.push(device);
 				}
 				return devices;
