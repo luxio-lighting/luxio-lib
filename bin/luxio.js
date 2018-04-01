@@ -6,7 +6,9 @@ const cmd = require('commander');
 cmd
 	.version( pkg.version )
 	.command('discover', 'Discover all Luxio devices on your network')
-	.command('on', 'Turn a Luxio device on or off')
+	.command('state', 'Get the state of a Luxio device')
+	.command('on', 'Turn a Luxio device on')
+	.command('off', 'Turn a Luxio device off')
 	.command('brightness', 'Set the brightness of a Luxio device')
 	.command('gradient', 'Set a gradient on a Luxio device')
 	.command('effect', 'Set an effect on a Luxio device')

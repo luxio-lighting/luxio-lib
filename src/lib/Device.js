@@ -13,38 +13,39 @@ class Device {
 		});
 				
 		this._opts = {};
+		this._state = {};
+		this._putQueue = {};
 		
 		for( let key in opts ) {
 			Object.defineProperty(this._opts, key, {
 				value: opts[key],
 				enumerable: true,
+				writable: false,
 			});			
-		}
-		
-		this._state = {
-			on: null,
-			brightness: null,
-			effect: null,
-			gradient_source: null,
-			gradient_pixels: null,
-			mode: null
-		};
-		this._propsChanged = {};
+		}		
 		
 	}
 	
 	_fetch( path, opts ) {
-		opts = Object.assign({
+		opts = {
 			method: 'GET',
 			body: undefined,
 			compress: false,
 			headers: {
-				'User-Agent': 'Luxio Client (JavaScript)'
-			}
-		}, opts || {});
+				'User-Agent': 'Luxio.js'
+			},
+			...opts,
+		};
 		
 		return fetch( `http://${this._opts.address}/${path}`, opts )
-			.then( res => res.text() )
+			.then( res => {
+				if( !res.ok ) throw new Error(res.statusText || res.status);
+				return res;
+			})
+			.then( res => {
+				if( res.status === 200 ) return res.json();
+				return;
+			})
 	}
 	
 	_getState() {
@@ -52,17 +53,8 @@ class Device {
 			method: 'GET'
 		})
 			.then(result => {
-				this._state = {};				
-				result.split('\n').map( line => {
-					line = line.split('=');
-					this._state[ line[0] ] = line[1]; 
-				});
+				this._state = result;
 			})
-	}
-	
-	_parseResult( result ) {
-		let resultObj = {};
-		return resultObj;
 	}
 	
 	get version() {
@@ -85,26 +77,33 @@ class Device {
 		if( typeof value !== 'string' )
 			throw new Error('Invalid type for name, expected: String');
 		
-		this._propsChanged['name'] = value;		
+		this._putQueue['name'] = { value };
+		this._state.name = value;
 	}
 	
 	get mode() {
+		if( this._state.mode === 'undefined' )
+			throw new Error('Device not synced');
+			
 		return this._state.mode;
 	}
 	
 	get pixels() {
-		return this._opts.pixels;
+		return this._state.pixels || this._opts.pixels;
 	}
 	
 	set pixels( value ) {
 		if( typeof value !== 'number' )
 			throw new Error('Invalid type for pixels, expected: Number');
 		
-		this._propsChanged['pixels'] = value.toString();	
+		this._putQueue['pixels'] = { value };
+		this._state.pixels = value;
 	}
 	
 	get on() {
-		if( typeof this._state.on === 'undefined' ) return null;
+		if( typeof this._state.on === 'undefined' )
+			throw new Error('Device not synced');
+			
 		return this._state.on === 'true';
 	}
 	
@@ -112,23 +111,29 @@ class Device {
 		if( typeof value !== 'boolean' )
 			throw new Error('Invalid type for on, expected: Boolean');
 		
-		this._propsChanged['on'] = this._state.on = value.toString();
+		this._putQueue['on'] = { value };
+		this._state.on = value;
 	}
 	
 	get brightness() {
-		if( typeof this._state.brightness === 'undefined' ) return null;
-		return parseInt(this._state.brightness) / 255;
+		if( typeof this._state.brightness === 'undefined' )
+			throw new Error('Device not synced');
+			
+		return this._state.brightness;
 	}
 	
 	set brightness( value ) {
 		if( typeof value !== 'number' )
 			throw new Error('Invalid type for brightness, expected: Number');
 		
-		this._propsChanged['brightness'] = this._state.brightness = Math.ceil(value * 255).toString();
+		this._putQueue['brightness'] = { value };
+		this._state.brightness = value;
 	}
 	
 	get effect() {
-		if( typeof this._state.effect === 'undefined' ) return null;
+		if( this._state.effect === 'undefined' )
+			throw new Error('Device not synced');
+			
 		return this._state.effect;
 	}
 	
@@ -136,23 +141,33 @@ class Device {
 		if( typeof value !== 'string' )
 			throw new Error('Invalid type for brightness, expected: String');
 		
-		this._propsChanged['effect'] = this._state.effect = value;
+		this._putQueue['effect'] = { value };
+		this._state.effect = value;
 	}
 	
 	get gradient() {
-		if( typeof this._state.gradient_source === 'undefined' ) return null;
-		return this._state.gradient_source.split(',').map( color => `#${color}` );
+		if( this._state.gradient_source === 'undefined' )
+			throw new Error('Device not synced');
+
+		return this._state.gradient_source.map( color => `#${color}` );
 	}
 	
 	set gradient( value ) {
 		if( !Array.isArray(value) )
 			throw new Error('Invalid type for gradient, expected: Array');
 			
-		let gradientSource = value;			
+		let gradientSource = value.map( color => {
+			if( color.charAt(0) === '#' ) return color.substring(1);
+			return color;
+		});			
 		let gradientPixels = this._createGradient( gradientSource );
 			
-		this._propsChanged['gradient'] = `${gradientSource.join(',')};${gradientPixels.join(',')}`;
+		this._putQueue['gradient'] = {
+			source: gradientSource,
+			pixels: gradientPixels,
+		}
 		this._state.gradient_source = gradientSource;
+		this._state.gradient_pixels = gradientPixels;
 	}
 	
 	_createGradient( inputArray ) {
@@ -184,27 +199,18 @@ class Device {
 		return this._fetch('restart', { method: 'PUT' });
 	}
 	
-	sync() {
-		
-		const promises = [];
-		
-		for( let key in this._propsChanged ) {
-			let value = this._propsChanged[key];
+	async sync() {
+		return Promise.all(Object.keys(this._putQueue).map(key => {
+			let value = this._putQueue[key];
 			let req = this._fetch(key, {
 				method: 'PUT',
-				body: value
+				body: JSON.stringify(value)
 			})
-			promises.push(req);
-			delete this._propsChanged[key];
-		}
-		
-		return Promise.all(promises)
-			.then(() => {
-				return this._getState();
-			})
-			.then(() => {
-				return;
-			})
+			delete this._putQueue[key];	
+			return req;		
+		}))
+			.then(() => this._getState())
+			.then(() => this)
 	}
 	
 }

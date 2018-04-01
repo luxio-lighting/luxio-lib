@@ -9,11 +9,11 @@ class Discovery {
 	getDevices() {
 		return fetch( config.nupnp.host )
 			.then( result => result.json() )
-			.then( result => result.message )
 			.then( result => {
 				const devices = [];
 				for( let id in result ) {
 					const device = new Device( id, result[id] );
+					if( device.version < 20 ) continue;
 					devices.push(device);
 				}
 				return devices;

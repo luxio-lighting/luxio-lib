@@ -8,11 +8,11 @@ cmd
 	
 helpers.getDevices().then( devices => {
 	return devices.forEach( device => {
-		device.on = true;
+		device.on = false;
 		device.sync().then(() => {
-			console.log(`Turned device ${device.id} on`)
+			console.log(`Turned device ${device.id} off`)
 		}).catch( err => {
-			console.error(`Could not turn device ${device.id} on`)			
+			console.error(`Could not turn device ${device.id} off`)			
 			console.error( err.message || err.toString() )
 		})
 	})

@@ -1,6 +1,6 @@
 {
 	"name": "luxio",
-	"version": "1.1.8",
+	"version": "1.2.0",
 	"description": "Luxio Client",
 	"main": "src/index.js",
 	"scripts": {
@@ -10,11 +10,12 @@
 	"author": "Emile Nijssen",
 	"license": "GPL-3.0",
 	"repository": {
-		"type" : "git",
-		"url" : "https://github.com/luxio-lighting/luxio.js"
+		"type": "git",
+		"url": "https://github.com/luxio-lighting/luxio.js"
 	},
 	"dependencies": {
 		"babel-polyfill": "^6.26.0",
+		"cli-table": "^0.3.1",
 		"commander": "^2.13.0",
 		"node-fetch": "^1.7.3",
 		"timeago.js": "^3.0.2",
@@ -23,7 +24,9 @@
 	"devDependencies": {
 		"babel-core": "^6.26.0",
 		"babel-preset-env": "^1.6.1",
-		"babelify": "^8.0.0"
+		"babelify": "^8.0.0",
+		"browserify": "^16.1.1",
+		"uglify-js": "^3.3.17"
 	},
 	"bin": {
 		"luxio": "bin/luxio.js"
