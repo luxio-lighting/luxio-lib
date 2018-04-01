@@ -1,7 +1,8 @@
 'use strict';
 
-const fetch = require('node-fetch');
 const tinygradient = require('tinygradient');
+
+const { fetch } = require('../util');
 
 class Device {
 	

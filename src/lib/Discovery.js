@@ -1,13 +1,14 @@
 'use strict';
 
-const config = require('../config');
-const fetch = require('node-fetch');
+const { nupnp } = require('../config');
+const { fetch } = require('../util');
+
 const Device = require('./Device.js');
 
 class Discovery {
 	
 	getDevices() {
-		return fetch( config.nupnp.host )
+		return fetch( nupnp.host )
 			.then( result => result.json() )
 			.then( result => {
 				const devices = [];
