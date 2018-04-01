@@ -1,7 +1,7 @@
 {
 	"name": "luxio",
-	"version": "1.2.0",
-	"description": "Luxio Client",
+	"version": "1.2.1",
+	"description": "Luxio.js",
 	"main": "src/index.js",
 	"scripts": {
 		"build": "rm -r dist > /dev/null 2>&1; mkdir dist; browserify src/index.js -o dist/luxio.js -t [ babelify --presets [ env ] ]; uglifyjs --compress --mangle -- dist/luxio.js > dist/luxio.min.js;",
