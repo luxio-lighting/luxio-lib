@@ -1,6 +1,6 @@
 {
 	"name": "luxio",
-	"version": "1.1.7",
+	"version": "1.1.8",
 	"description": "Luxio Client",
 	"main": "src/index.js",
 	"scripts": {
@@ -9,6 +9,12 @@
 	},
 	"author": "Emile Nijssen",
 	"license": "GPL-3.0",
+	"repository" :
+		{
+			"type" : "git",
+			"url" : "https://github.com/luxio-lighting/luxio.js"
+		}
+	},
 	"dependencies": {
 		"babel-polyfill": "^6.26.0",
 		"commander": "^2.13.0",
