@@ -7,7 +7,9 @@ module.exports.fetch = async function() {
 		return global.fetch;
 	} else if( typeof fetch === 'function' ) {
 		return fetch;
+	} else if( typeof global !== 'undefined' && typeof global.require === 'function' ) {
+		return global.require('node-fetch');
 	} else {
-		return require('node-fetch');
+		throw new Error('Unsupported environment');
 	}
 }
