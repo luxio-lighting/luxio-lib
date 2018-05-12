@@ -22,7 +22,7 @@ class Discovery {
 		})
 	}
 	
-	async getAPDevices({ timeout = 1 } = {}) {
+	async getAPDevices({ timeout = 750 } = {}) {
 		try {
 			const res = await Promise.race([
 				fetch(`http://${apAddress}/state`, { timeout }),
