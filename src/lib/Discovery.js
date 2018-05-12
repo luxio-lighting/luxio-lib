@@ -22,9 +22,14 @@ class Discovery {
 		})
 	}
 	
-	async getAPDevices({ timeout = 1000 } = {}) {
+	async getAPDevices({ timeout = 1 } = {}) {
 		try {
-			const res = await fetch(`http://${apAddress}/state`, { timeout });
+			const res = await Promise.race([
+				fetch(`http://${apAddress}/state`, { timeout }),
+				new Promise((resolve, reject) => {
+					setTimeout(reject, timeout);
+				}),
+			]);
 			if( !res.ok ) throw new Error('unknown_error');
 			const json = await res.json();
 			const device = new Device(json.id, {
