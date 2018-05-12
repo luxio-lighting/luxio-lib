@@ -2,21 +2,27 @@
 
 [![Node version](https://img.shields.io/npm/v/luxio.svg)](https://www.npmjs.com/package/luxio) [![Build Status](https://travis-ci.org/luxio-lighting/luxio.js.svg?branch=master)](https://travis-ci.org/luxio-lighting/luxio.js)
 
-This is a JavaScript library to find and control [Luxio](http://www.luxio.lighting) Wi-Fi LED Strips. It supports use as a Node.js dependency, in the browser, and in the command line.
+This is a JavaScript library to find and control [Luxio](https://luxio.lighting) Wi-Fi LED Strips. This module can be used in the browser or as a React or Node.js dependency.
 
 ## Installation
 
 ### Node.js
 
-In your project folder:
+In your project's folder:
 
-```
+```bash
 $ npm install luxio
+```
+
+Then include it in your project:
+
+```javascript
+const { Discovery } = require('luxio');
 ```
 
 ### Browser
 
-Using a script tag:
+By using a `<script>` tag:
 
 ```html
 <script type="text/javascript" src="./dist/luxio.min.js"></script>
@@ -28,8 +34,14 @@ Or use a CDN:
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/luxio@latest/dist/luxio.min.js"></script>
 ```
 
-### Command line
+Or when you're using a pre-compiler such as webpack:
+
+```javascript
+import { Discovery } from 'luxio';
 ```
+
+### Command line
+```bash
 $ npm install -g luxio
 ```
 
@@ -142,6 +154,10 @@ discovery.getDevices()
 	.catch( console.error )
 </script>
 ```
+
+## Notes
+
+* Discovery by default finds devices bothutilizing `https://nupnp.luxio.lighting` and by trying to connect to `http://192.168.4.1` (the Access Point default IP Address).
 
 ## Documentation
 Available at [https://luxio-lighting.github.io/luxio.js/](https://luxio-lighting.github.io/luxio.js/)

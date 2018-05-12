@@ -1,8 +1,8 @@
 'use strict';
 
-const tinygradient = require('tinygradient');
+const { createGradient } = require('../util');
 
-const { fetch } = require('../util');
+const fetch = require('cross-fetch');
 
 class Device {
 	
@@ -27,7 +27,7 @@ class Device {
 		
 	}
 	
-	_fetch( path, opts ) {
+	async _fetch( path, opts ) {
 		opts = {
 			method: 'GET',
 			body: undefined,
@@ -38,8 +38,7 @@ class Device {
 			...opts,
 		};
 		
-		return fetch()
-			.then( fetch => fetch(`http://${this._opts.address}/${path}`, opts) )
+		return fetch(`http://${this._opts.address}/${path}`, opts)
 			.then( res => {
 				if( !res.ok ) throw new Error(res.statusText || res.status);
 				return res;
@@ -50,13 +49,17 @@ class Device {
 			})
 	}
 	
-	_getState() {
+	async _getState() {
 		return this._fetch('state', {
 			method: 'GET'
 		})
 			.then(result => {
 				this._state = result;
 			})
+	}
+	
+	get connectivity() {
+		return this._opts.connectivity || 'lan';
 	}
 	
 	get version() {
@@ -90,6 +93,13 @@ class Device {
 		return this._state.mode;
 	}
 	
+	get wifi_ssid() {
+		if( this._state.wifi_ssid === 'undefined' )
+			throw new Error('Device not synced');
+			
+		return this._state.wifi_ssid;		
+	}
+	
 	get pixels() {
 		return this._state.pixels || this._opts.pixels;
 	}
@@ -106,7 +116,7 @@ class Device {
 		if( typeof this._state.on === 'undefined' )
 			throw new Error('Device not synced');
 			
-		return this._state.on === 'true';
+		return this._state.on;
 	}
 	
 	set on( value ) {
@@ -150,8 +160,10 @@ class Device {
 	get gradient() {
 		if( this._state.gradient_source === 'undefined' )
 			throw new Error('Device not synced');
-
-		return this._state.gradient_source.map( color => `#${color}` );
+			
+		const colors = this._state.gradient_source.map( color => `#${color}` );
+		if( colors.length === 1 ) return colors.concat( colors[0] );
+		return colors;
 	}
 	
 	set gradient( value ) {
@@ -162,7 +174,10 @@ class Device {
 			if( color.charAt(0) === '#' ) return color.substring(1);
 			return color;
 		});			
-		let gradientPixels = this._createGradient( gradientSource );
+		let gradientPixels = createGradient({
+			source: gradientSource,
+			pixels: this.pixels
+		});
 			
 		this._putQueue['gradient'] = {
 			source: gradientSource,
@@ -172,32 +187,7 @@ class Device {
 		this._state.gradient_pixels = gradientPixels;
 	}
 	
-	_createGradient( inputArray ) {
-		if( !Array.isArray(inputArray) )
-			throw new Error('Invalid type for createGradient, expected: Array');
-		
-		// add # to color
-		inputArray = inputArray.map( color => {
-			if( color.charAt(0) !== '#' ) return `#${color}`;
-			return color;
-		});
-		
-		// at least 2 colors
-		if( inputArray.length === 1 )
-			inputArray.push( inputArray[0] );
-		
-		return tinygradient(inputArray)
-			.rgb(this.pixels)
-			.map( color => {
-				return color
-					.toString('hex')
-					.substring(1)
-					.toUpperCase()
-			})
-			
-	}
-	
-	restart() {
+	async restart() {
 		return this._fetch('restart', { method: 'PUT' });
 	}
 	

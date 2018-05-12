@@ -1,5 +1,4 @@
 {
-	"nupnp": {
-		"host": "https://nupnp.luxio.lighting"
-	}
+	"nupnpAddress": "https://nupnp.luxio.lighting",
+	"apAddress": "192.168.4.1"
 }

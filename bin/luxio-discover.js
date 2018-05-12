@@ -3,6 +3,7 @@
 const cmd = require('commander')
 const timeago = require('timeago.js');
 const Table = require('cli-table');
+const chalk = require('chalk');
 const Discovery = require('..').Discovery;
 
 cmd.parse(process.argv)
@@ -17,8 +18,9 @@ discovery.getDevices().then( devices => {
 			'Version',
 			'Address',
 			'Pixels',
-			'Last seen'
-		]
+			'Last seen',
+			'Connectivity',
+		].map(str => chalk.cyan(str))
 	});
 	
 	devices.forEach( device => { 
@@ -29,7 +31,17 @@ discovery.getDevices().then( devices => {
 			device.address,
 			device.pixels,
 			timeago().format(device.lastseen),
-		])
+			device.connectivity,
+		].map(prop => {
+			if( typeof prop === 'undefined' )
+				return '-';
+				
+			try {
+				return String(prop);
+			} catch( err ) {
+				return '-';
+			}
+		}))
 	})
 	
 	console.log(table.toString());

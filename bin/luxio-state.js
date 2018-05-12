@@ -2,6 +2,7 @@
 
 const cmd = require('commander')
 const Table = require('cli-table');
+const chalk = require('chalk');
 const helpers = require('./helpers.js')
 
 cmd
@@ -10,7 +11,8 @@ cmd
 helpers.getDevices().then( devices => {
 	return devices.forEach( device => {
 		device.sync().then(() => {
-			console.log(`Device ${device.name}:`)
+			console.log('');
+			console.log(chalk.bold.white(` ${device.name} `));
 			
 			let table = new Table({
 				head: [
@@ -19,7 +21,9 @@ helpers.getDevices().then( devices => {
 					'Mode',
 					'Gradient',
 					'Effect',
-				]
+					'Wi-Fi SSID',
+					'Connectivity',
+				].map(str => chalk.cyan(str))
 			});
 			
 			table.push([
@@ -28,6 +32,8 @@ helpers.getDevices().then( devices => {
 				device.mode,
 				device.gradient.join(','),
 				device.effect ? device.effect : 'Not active',
+				device.wifi_ssid,
+				device.connectivity,
 			])
 			
 			console.log(table.toString());

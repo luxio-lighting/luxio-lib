@@ -1,15 +1,31 @@
 'use strict';
 
-module.exports.fetch = async function() {
-	if( typeof window !== 'undefined' && typeof window.fetch === 'function' ) {
-		return window.fetch;
-	} else if( typeof global !== 'undefined' && typeof global.fetch === 'function' ) {
-		return global.fetch;
-	} else if( typeof fetch === 'function' ) {
-		return fetch;
-	} else if( typeof global !== 'undefined' && typeof global.require === 'function' ) {
-		return global.require('node-fetch');
-	} else {
-		throw new Error('Unsupported environment');
-	}
+const tinygradient = require('tinygradient');
+
+function createGradient({ source, pixels }) {
+	if( !Array.isArray(source) )
+		throw new Error('Invalid type for createGradient, expected: Array');
+	
+	// add # to color
+	const colors = source.map( color => {
+		if( color.charAt(0) !== '#' ) return `#${color}`;
+		return color;
+	});
+	
+	// at least 2 colors
+	if( colors.length === 1 )
+		colors.push( colors[0] );
+	
+	return tinygradient(colors)
+		.rgb(pixels)
+		.map(color => {
+			return color
+				.toString('hex')
+				.substring(1)
+				.toUpperCase()
+		})
+}
+
+module.exports = {
+	createGradient,
 }
