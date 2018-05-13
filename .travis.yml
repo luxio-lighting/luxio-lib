@@ -5,10 +5,6 @@ node_js:
 branches:
   only:
     - production
-before_install:
-  - npm i -g browserify
-  - npm i -g babelify
-  - npm i -g uglify-js
 script:
   - npm run build
 before_deploy:

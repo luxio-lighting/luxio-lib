@@ -1,6 +1,6 @@
 'use strict';
 
-const Discovery = require('../../').Discovery;
+const { Discovery } = require('../../');
 const discovery = new Discovery();
 
 discovery.getDevices()
