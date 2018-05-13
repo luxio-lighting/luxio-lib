@@ -25,7 +25,7 @@ const { Discovery } = require('luxio');
 By using a `<script>` tag:
 
 ```html
-<script type="text/javascript" src="./dist/luxio.min.js"></script>
+<script type="text/javascript" src="./dist/web/luxio.min.js"></script>
 ```
 
 Or use a CDN:
