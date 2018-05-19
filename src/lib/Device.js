@@ -13,6 +13,7 @@ class Device {
 				
 		this._opts = {};
 		this._state = {};
+		this._stateSynced = false;
 		this._putQueue = {};
 		
 		for( let key in opts ) {
@@ -48,10 +49,10 @@ class Device {
 	async _getState() {
 		return this._fetch('state', {
 			method: 'GET'
-		})
-			.then(result => {
-				this._state = result;
-			})
+		}).then(result => {
+			this._stateSynced = true;
+			this._state = result;
+		});
 	}
 	
 	get connectivity() {
@@ -59,7 +60,7 @@ class Device {
 	}
 	
 	get version() {
-		return parseInt(this._opts.version);
+		return this._state.version || this._opts.version;
 	}
 	
 	get lastseen() {
@@ -75,6 +76,9 @@ class Device {
 	}
 	
 	set name( value ) {
+		if( !this._stateSynced )
+			throw new Error('Device not synced');
+			
 		if( typeof value !== 'string' )
 			throw new Error('Invalid type for name, expected: String');
 		
@@ -83,14 +87,14 @@ class Device {
 	}
 	
 	get mode() {
-		if( this._state.mode === 'undefined' )
+		if( !this._stateSynced )
 			throw new Error('Device not synced');
 			
 		return this._state.mode;
 	}
 	
 	get wifi_ssid() {
-		if( this._state.wifi_ssid === 'undefined' )
+		if( !this._stateSynced )
 			throw new Error('Device not synced');
 			
 		return this._state.wifi_ssid;		
@@ -101,6 +105,9 @@ class Device {
 	}
 	
 	set pixels( value ) {
+		if( !this._stateSynced )
+			throw new Error('Device not synced');
+			
 		if( typeof value !== 'number' )
 			throw new Error('Invalid type for pixels, expected: Number');
 		
@@ -116,6 +123,9 @@ class Device {
 	}
 	
 	set on( value ) {
+		if( !this._stateSynced )
+			throw new Error('Device not synced');
+			
 		if( typeof value !== 'boolean' )
 			throw new Error('Invalid type for on, expected: Boolean');
 		
@@ -124,13 +134,16 @@ class Device {
 	}
 	
 	get brightness() {
-		if( typeof this._state.brightness === 'undefined' )
+		if( !this._stateSynced )
 			throw new Error('Device not synced');
 			
 		return this._state.brightness;
 	}
 	
 	set brightness( value ) {
+		if( !this._stateSynced )
+			throw new Error('Device not synced');
+			
 		if( typeof value !== 'number' )
 			throw new Error('Invalid type for brightness, expected: Number');
 		
@@ -139,14 +152,14 @@ class Device {
 	}
 	
 	get effect() {
-		if( this._state.effect === 'undefined' )
+		if( !this._stateSynced )
 			throw new Error('Device not synced');
 			
 		return this._state.effect;
 	}
 	
 	set effect( value ) {
-		if( this._state.effect === 'undefined' )
+		if( !this._stateSynced )
 			throw new Error('Device not synced');
 						
 		if( typeof value !== 'string' )
@@ -160,7 +173,7 @@ class Device {
 	}
 	
 	get gradient() {
-		if( this._state.gradient_source === 'undefined' )
+		if( !this._stateSynced )
 			throw new Error('Device not synced');
 			
 		if( this._state.gradient_source === null ) 
@@ -172,6 +185,9 @@ class Device {
 	}
 	
 	set gradient( value ) {
+		if( !this._stateSynced )
+			throw new Error('Device not synced');
+			
 		if( !Array.isArray(value) )
 			throw new Error('Invalid type for gradient, expected: Array');
 			

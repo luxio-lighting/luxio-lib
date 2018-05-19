@@ -9153,6 +9153,7 @@ var Device = function () {
 
 		this._opts = {};
 		this._state = {};
+		this._stateSynced = false;
 		this._putQueue = {};
 
 		for (var key in opts) {
@@ -9214,6 +9215,7 @@ var Device = function () {
 								return _context2.abrupt('return', this._fetch('state', {
 									method: 'GET'
 								}).then(function (result) {
+									_this._stateSynced = true;
 									_this._state = result;
 								}));
 
@@ -9301,7 +9303,7 @@ var Device = function () {
 	}, {
 		key: 'version',
 		get: function get() {
-			return parseInt(this._opts.version);
+			return this._state.version || this._opts.version;
 		}
 	}, {
 		key: 'lastseen',
@@ -9319,6 +9321,8 @@ var Device = function () {
 			return this._state.name || this._opts.name;
 		},
 		set: function set(value) {
+			if (!this._stateSynced) throw new Error('Device not synced');
+
 			if (typeof value !== 'string') throw new Error('Invalid type for name, expected: String');
 
 			this._putQueue['name'] = { value: value };
@@ -9327,14 +9331,14 @@ var Device = function () {
 	}, {
 		key: 'mode',
 		get: function get() {
-			if (this._state.mode === 'undefined') throw new Error('Device not synced');
+			if (!this._stateSynced) throw new Error('Device not synced');
 
 			return this._state.mode;
 		}
 	}, {
 		key: 'wifi_ssid',
 		get: function get() {
-			if (this._state.wifi_ssid === 'undefined') throw new Error('Device not synced');
+			if (!this._stateSynced) throw new Error('Device not synced');
 
 			return this._state.wifi_ssid;
 		}
@@ -9344,6 +9348,8 @@ var Device = function () {
 			return this._state.pixels || this._opts.pixels;
 		},
 		set: function set(value) {
+			if (!this._stateSynced) throw new Error('Device not synced');
+
 			if (typeof value !== 'number') throw new Error('Invalid type for pixels, expected: Number');
 
 			this._putQueue['pixels'] = { value: value };
@@ -9357,6 +9363,8 @@ var Device = function () {
 			return this._state.on;
 		},
 		set: function set(value) {
+			if (!this._stateSynced) throw new Error('Device not synced');
+
 			if (typeof value !== 'boolean') throw new Error('Invalid type for on, expected: Boolean');
 
 			this._putQueue['on'] = { value: value };
@@ -9365,11 +9373,13 @@ var Device = function () {
 	}, {
 		key: 'brightness',
 		get: function get() {
-			if (typeof this._state.brightness === 'undefined') throw new Error('Device not synced');
+			if (!this._stateSynced) throw new Error('Device not synced');
 
 			return this._state.brightness;
 		},
 		set: function set(value) {
+			if (!this._stateSynced) throw new Error('Device not synced');
+
 			if (typeof value !== 'number') throw new Error('Invalid type for brightness, expected: Number');
 
 			this._putQueue['brightness'] = { value: value };
@@ -9378,16 +9388,16 @@ var Device = function () {
 	}, {
 		key: 'effect',
 		get: function get() {
-			if (this._state.effect === 'undefined') throw new Error('Device not synced');
+			if (!this._stateSynced) throw new Error('Device not synced');
 
 			return this._state.effect;
 		},
 		set: function set(value) {
-			if (this._state.effect === 'undefined') throw new Error('Device not synced');
+			if (!this._stateSynced) throw new Error('Device not synced');
 
 			if (typeof value !== 'string') throw new Error('Invalid type for brightness, expected: String');
 
-			if (!this._state.effects.includes(value)) throw new Error('Unknown effect: ' + value);
+			if (!this._state.effects.includes(value)) throw new Error('Invalid effect: ' + value);
 
 			this._putQueue['effect'] = { value: value };
 			this._state.effect = value;
@@ -9395,7 +9405,7 @@ var Device = function () {
 	}, {
 		key: 'gradient',
 		get: function get() {
-			if (this._state.gradient_source === 'undefined') throw new Error('Device not synced');
+			if (!this._stateSynced) throw new Error('Device not synced');
 
 			if (this._state.gradient_source === null) return null;
 
@@ -9406,6 +9416,8 @@ var Device = function () {
 			return colors;
 		},
 		set: function set(value) {
+			if (!this._stateSynced) throw new Error('Device not synced');
+
 			if (!Array.isArray(value)) throw new Error('Invalid type for gradient, expected: Array');
 
 			var gradientSource = value.map(function (color) {

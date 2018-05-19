@@ -14,5 +14,9 @@ module.exports.getDevices = () => {
 			if( device.name === cmd.device ) return true;
 			return false;
 		})
+	}).then(devices => {
+		return Promise.all(devices.map(device => {
+			return device.sync();
+		}))
 	})
 }

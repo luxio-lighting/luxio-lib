@@ -1,6 +1,6 @@
 {
 	"name": "luxio",
-	"version": "1.4.1",
+	"version": "1.4.2",
 	"description": "Luxio.js",
 	"main": "dist/js/index.js",
 	"scripts": {
