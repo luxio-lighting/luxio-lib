@@ -1,7 +1,7 @@
 'use strict';
 
-const { nupnpAddress, apAddress } = require('../config');
-const fetch = require('cross-fetch');
+const { nupnpAddress, apAddress, minimumVersion } = require('../config');
+const { fetch } = require('../util');
 
 const Device = require('./Device.js');
 
@@ -32,6 +32,7 @@ class Discovery {
 			]);
 			if( !res.ok ) throw new Error('unknown_error');
 			const json = await res.json();
+			if( json.version < minimumVersion ) return [];
 			const device = new Device(json.id, {
 				...json,
 				type: 'luxio',
@@ -50,7 +51,7 @@ class Discovery {
 		const devices = await res.json();
 		return Object.keys(devices).filter(deviceId => {
 			const device = devices[deviceId];
-			if( device.version < 20 ) return false;
+			if( device.version < minimumVersion ) return false;
 			return true;			
 		}).map(deviceId => {
 			const device = devices[deviceId];

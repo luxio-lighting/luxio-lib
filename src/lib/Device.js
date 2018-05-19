@@ -1,8 +1,6 @@
 'use strict';
 
-const { createGradient } = require('../util');
-
-const fetch = require('cross-fetch');
+const { createGradient, fetch } = require('../util');
 
 class Device {
 	
@@ -32,9 +30,7 @@ class Device {
 			method: 'GET',
 			body: undefined,
 			compress: false,
-			headers: {
-				'User-Agent': 'Luxio.js'
-			},
+			timeout: 2500,
 			...opts,
 		};
 		
@@ -150,8 +146,14 @@ class Device {
 	}
 	
 	set effect( value ) {
+		if( this._state.effect === 'undefined' )
+			throw new Error('Device not synced');
+						
 		if( typeof value !== 'string' )
 			throw new Error('Invalid type for brightness, expected: String');
+					
+		if( !this._state.effects.includes(value) )
+			throw new Error('Invalid effect: ' + value);
 		
 		this._putQueue['effect'] = { value };
 		this._state.effect = value;
@@ -161,6 +163,9 @@ class Device {
 		if( this._state.gradient_source === 'undefined' )
 			throw new Error('Device not synced');
 			
+		if( this._state.gradient_source === null ) 
+			return null;
+						
 		const colors = this._state.gradient_source.map( color => `#${color}` );
 		if( colors.length === 1 ) return colors.concat( colors[0] );
 		return colors;

@@ -29,3 +29,9 @@ function createGradient({ source, pixels }) {
 module.exports = {
 	createGradient,
 }
+
+if( typeof window !== 'undefined' ) {
+	module.exports.fetch = require('./fetch.js');
+} else {
+	module.exports.fetch = require('node-fetch');
+}
