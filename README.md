@@ -2,7 +2,13 @@
 
 [![Node version](https://img.shields.io/npm/v/luxio.svg)](https://www.npmjs.com/package/luxio) [![Build Status](https://travis-ci.org/luxio-lighting/luxio.js.svg?branch=master)](https://travis-ci.org/luxio-lighting/luxio.js)
 
-This is a JavaScript library to find and control [Luxio](https://luxio.lighting) Wi-Fi LED Strips. This module can be used in the browser or as a React or Node.js dependency.
+Luxio.js is a JavaScript library to find and control [Luxio](https://luxio.lighting) Wi-Fi LED Strips.
+
+This module can be used:
+
+* In the browser
+* In a Node.js or React project
+* As a Command-Line tool
 
 ## Node.js
 
