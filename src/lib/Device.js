@@ -183,7 +183,11 @@ class Device {
 		if( this._state.gradient_source === null ) 
 			return null;
 						
-		const colors = this._state.gradient_source;
+		const colors = this._state.gradient_source.map(color => {
+			if( color.charAt(0) !== '#' ) return `#${color}`;
+			return color;
+		});
+		
 		if( colors.length === 1 ) return colors.concat( colors[0] );
 		return colors;
 	}
