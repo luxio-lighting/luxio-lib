@@ -9138,10 +9138,13 @@ function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, a
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var _require = require('../util'),
-    createGradient = _require.createGradient,
-    getColorTemperature = _require.getColorTemperature,
-    fetch = _require.fetch;
+var _require = require('../config'),
+    apAddress = _require.apAddress;
+
+var _require2 = require('../util'),
+    createGradient = _require2.createGradient,
+    getColorTemperature = _require2.getColorTemperature,
+    fetch = _require2.fetch;
 
 var Device = function () {
 	function Device(id, opts) {
@@ -9355,7 +9358,7 @@ var Device = function () {
 	}, {
 		key: 'connectivity',
 		get: function get() {
-			return this._opts.connectivity || 'lan';
+			return this.address === apAddress ? 'ap' : 'lan';
 		}
 	}, {
 		key: 'version',
@@ -9512,12 +9515,14 @@ var Device = function () {
 
 module.exports = Device;
 
-},{"../util":334}],332:[function(require,module,exports){
+},{"../config":329,"../util":334}],332:[function(require,module,exports){
 'use strict';
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _objectDestructuringEmpty(obj) { if (obj == null) throw new TypeError("Cannot destructure undefined"); }
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
@@ -9548,7 +9553,8 @@ var Discovery = function () {
 				    _ref2$ap = _ref2.ap,
 				    ap = _ref2$ap === undefined ? true : _ref2$ap,
 				    _ref2$nupnp = _ref2.nupnp,
-				    nupnp = _ref2$nupnp === undefined ? true : _ref2$nupnp;
+				    nupnp = _ref2$nupnp === undefined ? true : _ref2$nupnp,
+				    timeout = _ref2.timeout;
 
 				var fns, deviceIds;
 				return regeneratorRuntime.wrap(function _callee$(_context) {
@@ -9557,7 +9563,7 @@ var Discovery = function () {
 							case 0:
 								fns = [];
 
-								if (ap) fns.push(this.getAPDevices());
+								if (ap) fns.push(this.getAPDevices({ timeout: timeout }));
 								if (nupnp) fns.push(this.getNupnpDevices());
 
 								deviceIds = [];
@@ -9591,7 +9597,7 @@ var Discovery = function () {
 			var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2() {
 				var _ref5 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
 				    _ref5$timeout = _ref5.timeout,
-				    timeout = _ref5$timeout === undefined ? 750 : _ref5$timeout;
+				    timeout = _ref5$timeout === undefined ? 2500 : _ref5$timeout;
 
 				var res, json, device;
 				return regeneratorRuntime.wrap(function _callee2$(_context2) {
@@ -9601,7 +9607,9 @@ var Discovery = function () {
 								_context2.prev = 0;
 								_context2.next = 3;
 								return Promise.race([fetch('http://' + apAddress + '/state', { timeout: timeout }), new Promise(function (resolve, reject) {
-									setTimeout(reject, timeout);
+									setTimeout(function () {
+										reject(new Error('Timeout'));
+									}, timeout);
 								})]);
 
 							case 3:
@@ -9631,9 +9639,8 @@ var Discovery = function () {
 							case 11:
 								device = new Device(json.id, _extends({}, json, {
 									type: 'luxio',
-									address: '192.168.4.1',
-									lastseen: Date.now() / 1000,
-									connectivity: 'ap'
+									address: apAddress,
+									lastseen: Date.now() / 1000
 								}));
 								return _context2.abrupt('return', [device]);
 
@@ -9660,20 +9667,24 @@ var Discovery = function () {
 		key: 'getNupnpDevices',
 		value: function () {
 			var _ref6 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3() {
+				var _ref7 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
 				var res, devices;
 				return regeneratorRuntime.wrap(function _callee3$(_context3) {
 					while (1) {
 						switch (_context3.prev = _context3.next) {
 							case 0:
-								_context3.next = 2;
+								_objectDestructuringEmpty(_ref7);
+
+								_context3.next = 3;
 								return fetch(nupnpAddress);
 
-							case 2:
+							case 3:
 								res = _context3.sent;
-								_context3.next = 5;
+								_context3.next = 6;
 								return res.json();
 
-							case 5:
+							case 6:
 								devices = _context3.sent;
 								return _context3.abrupt('return', Object.keys(devices).filter(function (deviceId) {
 									var device = devices[deviceId];
@@ -9681,12 +9692,10 @@ var Discovery = function () {
 									return true;
 								}).map(function (deviceId) {
 									var device = devices[deviceId];
-									return new Device(deviceId, _extends({}, device, {
-										connectivity: 'lan'
-									}));
+									return new Device(deviceId, device);
 								}));
 
-							case 7:
+							case 8:
 							case 'end':
 								return _context3.stop();
 						}

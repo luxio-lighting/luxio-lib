@@ -1,5 +1,6 @@
 'use strict';
 
+const { apAddress } = require('../config');
 const {
 	createGradient,
 	getColorTemperature,
@@ -61,7 +62,7 @@ class Device {
 		Read-only properties
 	*/
 	get connectivity() {
-		return this._opts.connectivity || 'lan';
+		return this.address === apAddress ? 'ap' : 'lan';
 	}
 	
 	get version() {

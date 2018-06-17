@@ -7,9 +7,9 @@ const Device = require('./Device.js');
 
 class Discovery {
 	
-	async getDevices({ ap = true, nupnp = true } = {}) {
+	async getDevices({ ap = true, nupnp = true, timeout } = {}) {
 		const fns = [];
-		if( ap ) fns.push( this.getAPDevices() );
+		if( ap ) fns.push( this.getAPDevices({ timeout }) );
 		if( nupnp ) fns.push( this.getNupnpDevices() );
 		
 		const deviceIds = [];
@@ -22,12 +22,14 @@ class Discovery {
 		})
 	}
 	
-	async getAPDevices({ timeout = 750 } = {}) {
+	async getAPDevices({ timeout = 2500 } = {}) {
 		try {
 			const res = await Promise.race([
 				fetch(`http://${apAddress}/state`, { timeout }),
 				new Promise((resolve, reject) => {
-					setTimeout(reject, timeout);
+					setTimeout(() => {
+						reject(new Error('Timeout'));
+					}, timeout);
 				}),
 			]);
 			if( !res.ok ) throw new Error('unknown_error');
@@ -36,9 +38,8 @@ class Discovery {
 			const device = new Device(json.id, {
 				...json,
 				type: 'luxio',
-				address: '192.168.4.1',
+				address: apAddress,
 				lastseen: Date.now() / 1000,
-				connectivity: 'ap',
 			});
 			return [ device ];
 		} catch( err ) {
@@ -46,7 +47,7 @@ class Discovery {
 		}
 	}
 	
-	async getNupnpDevices() {
+	async getNupnpDevices({} = {}) {
 		const res = await fetch(nupnpAddress);
 		const devices = await res.json();
 		return Object.keys(devices).filter(deviceId => {
@@ -55,10 +56,7 @@ class Discovery {
 			return true;			
 		}).map(deviceId => {
 			const device = devices[deviceId];
-			return new Device(deviceId, {
-				...device,
-				connectivity: 'lan',
-			});
+			return new Device(deviceId, device);
 		})
 	}
 	
