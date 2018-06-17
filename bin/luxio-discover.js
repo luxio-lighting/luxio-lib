@@ -45,4 +45,4 @@ discovery.getDevices().then( devices => {
 	})
 	
 	console.log(table.toString());
-})
+}).catch(console.error);

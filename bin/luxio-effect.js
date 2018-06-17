@@ -15,10 +15,10 @@ helpers.getDevices().then( devices => {
 		device.effect = cmd.id;
 		device.on = true;
 		device.sync().then(() => {
-			console.log(`Set effect ${cmd.id} to device ${device.id}`)
+			console.log(`Set effect ${cmd.id} to device ${device.name}`)
 		}).catch( err => {
-			console.error(`Could not set effect ${cmd.id} to device ${device.id}`)			
+			console.error(`Could not set effect ${cmd.id} to device ${device.name}`)			
 			console.error( err.message || err.toString() )
 		})
 	})
-})
+}).catch(console.error);

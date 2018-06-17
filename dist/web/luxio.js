@@ -9140,6 +9140,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var _require = require('../util'),
     createGradient = _require.createGradient,
+    getColorTemperature = _require.getColorTemperature,
     fetch = _require.fetch;
 
 var Device = function () {
@@ -9173,14 +9174,12 @@ var Device = function () {
 					while (1) {
 						switch (_context.prev = _context.next) {
 							case 0:
-								opts = _extends({
+								return _context.abrupt('return', fetch('http://' + this._opts.address + '/' + path, _extends({
 									method: 'GET',
 									body: undefined,
 									compress: false,
-									timeout: 2500
-								}, opts);
-
-								return _context.abrupt('return', fetch('http://' + this._opts.address + '/' + path, opts).then(function (res) {
+									timeout: 5000
+								}, opts)).then(function (res) {
 									if (!res.ok) throw new Error(res.statusText || res.status);
 									return res;
 								}).then(function (res) {
@@ -9188,7 +9187,7 @@ var Device = function () {
 									return;
 								}));
 
-							case 2:
+							case 1:
 							case 'end':
 								return _context.stop();
 						}
@@ -9233,6 +9232,11 @@ var Device = function () {
 
 			return _getState;
 		}()
+
+		/*
+  	Read-only properties
+  */
+
 	}, {
 		key: 'restart',
 		value: function () {
@@ -9258,16 +9262,69 @@ var Device = function () {
 			return restart;
 		}()
 	}, {
-		key: 'sync',
+		key: 'getWifiNetworks',
 		value: function () {
 			var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4() {
-				var _this2 = this;
-
 				return regeneratorRuntime.wrap(function _callee4$(_context4) {
 					while (1) {
 						switch (_context4.prev = _context4.next) {
 							case 0:
-								return _context4.abrupt('return', Promise.all(Object.keys(this._putQueue).map(function (key) {
+								return _context4.abrupt('return', this._fetch('network'));
+
+							case 1:
+							case 'end':
+								return _context4.stop();
+						}
+					}
+				}, _callee4, this);
+			}));
+
+			function getWifiNetworks() {
+				return _ref4.apply(this, arguments);
+			}
+
+			return getWifiNetworks;
+		}()
+	}, {
+		key: 'setWifiNetwork',
+		value: function () {
+			var _ref6 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(_ref5) {
+				var ssid = _ref5.ssid,
+				    pass = _ref5.pass;
+				return regeneratorRuntime.wrap(function _callee5$(_context5) {
+					while (1) {
+						switch (_context5.prev = _context5.next) {
+							case 0:
+								return _context5.abrupt('return', this._fetch('network', {
+									method: 'PUT',
+									body: JSON.stringify({ ssid: ssid, pass: pass })
+								}));
+
+							case 1:
+							case 'end':
+								return _context5.stop();
+						}
+					}
+				}, _callee5, this);
+			}));
+
+			function setWifiNetwork(_x3) {
+				return _ref6.apply(this, arguments);
+			}
+
+			return setWifiNetwork;
+		}()
+	}, {
+		key: 'sync',
+		value: function () {
+			var _ref7 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6() {
+				var _this2 = this;
+
+				return regeneratorRuntime.wrap(function _callee6$(_context6) {
+					while (1) {
+						switch (_context6.prev = _context6.next) {
+							case 0:
+								return _context6.abrupt('return', Promise.all(Object.keys(this._putQueue).map(function (key) {
 									var value = _this2._putQueue[key];
 									var req = _this2._fetch(key, {
 										method: 'PUT',
@@ -9283,14 +9340,14 @@ var Device = function () {
 
 							case 1:
 							case 'end':
-								return _context4.stop();
+								return _context6.stop();
 						}
 					}
-				}, _callee4, this);
+				}, _callee6, this);
 			}));
 
 			function sync() {
-				return _ref4.apply(this, arguments);
+				return _ref7.apply(this, arguments);
 			}
 
 			return sync;
@@ -9316,17 +9373,17 @@ var Device = function () {
 			return this._opts.address;
 		}
 	}, {
-		key: 'name',
+		key: 'wifi',
 		get: function get() {
-			return this._state.name || this._opts.name;
-		},
-		set: function set(value) {
 			if (!this._stateSynced) throw new Error('Device not synced');
 
-			if (typeof value !== 'string') throw new Error('Invalid type for name, expected: String');
-
-			this._putQueue['name'] = { value: value };
-			this._state.name = value;
+			return {
+				ssid: this._state.wifi_ssid,
+				ip_lan: this._state.wifi_ip_lan,
+				ip_ap: this._state.wifi_ip_ap,
+				connected: !!this._state.wifi_connected,
+				ap: !!this._state.wifi_ap
+			};
 		}
 	}, {
 		key: 'mode',
@@ -9335,12 +9392,21 @@ var Device = function () {
 
 			return this._state.mode;
 		}
-	}, {
-		key: 'wifi_ssid',
-		get: function get() {
-			if (!this._stateSynced) throw new Error('Device not synced');
 
-			return this._state.wifi_ssid;
+		/*
+  	Read-Write properties
+  */
+
+	}, {
+		key: 'name',
+		get: function get() {
+			return this._state.name || this._opts.name;
+		},
+		set: function set(value) {
+			if (typeof value !== 'string') throw new Error('Invalid type for name, expected: String');
+
+			this._putQueue['name'] = { value: value };
+			this._state.name = value;
 		}
 	}, {
 		key: 'pixels',
@@ -9348,8 +9414,6 @@ var Device = function () {
 			return this._state.pixels || this._opts.pixels;
 		},
 		set: function set(value) {
-			if (!this._stateSynced) throw new Error('Device not synced');
-
 			if (typeof value !== 'number') throw new Error('Invalid type for pixels, expected: Number');
 
 			this._putQueue['pixels'] = { value: value };
@@ -9363,8 +9427,6 @@ var Device = function () {
 			return this._state.on;
 		},
 		set: function set(value) {
-			if (!this._stateSynced) throw new Error('Device not synced');
-
 			if (typeof value !== 'boolean') throw new Error('Invalid type for on, expected: Boolean');
 
 			this._putQueue['on'] = { value: value };
@@ -9378,8 +9440,6 @@ var Device = function () {
 			return this._state.brightness;
 		},
 		set: function set(value) {
-			if (!this._stateSynced) throw new Error('Device not synced');
-
 			if (typeof value !== 'number') throw new Error('Invalid type for brightness, expected: Number');
 
 			this._putQueue['brightness'] = { value: value };
@@ -9393,8 +9453,6 @@ var Device = function () {
 			return this._state.effect;
 		},
 		set: function set(value) {
-			if (!this._stateSynced) throw new Error('Device not synced');
-
 			if (typeof value !== 'string') throw new Error('Invalid type for brightness, expected: String');
 
 			if (!this._state.effects.includes(value)) throw new Error('Invalid effect: ' + value);
@@ -9409,15 +9467,11 @@ var Device = function () {
 
 			if (this._state.gradient_source === null) return null;
 
-			var colors = this._state.gradient_source.map(function (color) {
-				return '#' + color;
-			});
+			var colors = this._state.gradient_source;
 			if (colors.length === 1) return colors.concat(colors[0]);
 			return colors;
 		},
 		set: function set(value) {
-			if (!this._stateSynced) throw new Error('Device not synced');
-
 			if (!Array.isArray(value)) throw new Error('Invalid type for gradient, expected: Array');
 
 			var gradientSource = value.map(function (color) {
@@ -9435,6 +9489,17 @@ var Device = function () {
 			};
 			this._state.gradient_source = gradientSource;
 			this._state.gradient_pixels = gradientPixels;
+		}
+	}, {
+		key: 'color',
+		set: function set(value) {
+			this.gradient = [value];
+		}
+	}, {
+		key: 'colorTemperature',
+		set: function set(value) {
+			var color = getColorTemperature(value);
+			this.color = color;
 		}
 	}]);
 
@@ -10116,8 +10181,21 @@ function createGradient(_ref) {
 	});
 }
 
+/*
+	Get a color temperature, based on cool (0) or warm (1)
+*/
+function getColorTemperature(temperature) {
+	if (temperature < 0 || temperature > 1) throw new Error('Color Temperature is out of bounds');
+
+	var gradient = tinygradient('#CCFBFD', '#FFFFFF', '#FFDA73').hsv(99);
+	var color = gradient[Math.floor(temperature * 98)];
+	return color.toHexString().substring(1) // remove #
+	.toUpperCase();
+}
+
 module.exports = {
-	createGradient: createGradient
+	createGradient: createGradient,
+	getColorTemperature: getColorTemperature
 };
 
 if (typeof window !== 'undefined') {

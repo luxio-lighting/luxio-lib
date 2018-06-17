@@ -16,10 +16,10 @@ helpers.getDevices().then( devices => {
 		device.gradient = gradient;
 		device.on = true;
 		device.sync().then(() => {
-			console.log(`Set gradient ${gradient} to device ${device.id}`)
+			console.log(`Set gradient ${gradient} to device ${device.name}`)
 		}).catch( err => {
-			console.error(`Could not set gradient ${gradient} to device ${device.id}`)			
+			console.error(`Could not set gradient ${gradient} to device ${device.name}`)			
 			console.error( err.message || err.toString() )
 		})
 	})
-})
+}).catch(console.error);

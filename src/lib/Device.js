@@ -1,6 +1,10 @@
 'use strict';
 
-const { createGradient, fetch } = require('../util');
+const {
+	createGradient,
+	getColorTemperature,
+	fetch
+} = require('../util');
 
 class Device {
 	
@@ -26,16 +30,14 @@ class Device {
 		
 	}
 	
-	async _fetch( path, opts ) {
-		opts = {
+	async _fetch( path, opts ) {		
+		return fetch(`http://${this._opts.address}/${path}`, {
 			method: 'GET',
 			body: undefined,
 			compress: false,
-			timeout: 2500,
+			timeout: 5000,
 			...opts,
-		};
-		
-		return fetch(`http://${this._opts.address}/${path}`, opts)
+		})
 			.then( res => {
 				if( !res.ok ) throw new Error(res.statusText || res.status);
 				return res;
@@ -55,6 +57,9 @@ class Device {
 		});
 	}
 	
+	/*
+		Read-only properties
+	*/
 	get connectivity() {
 		return this._opts.connectivity || 'lan';
 	}
@@ -71,19 +76,17 @@ class Device {
 		return this._opts.address;
 	}
 	
-	get name() {
-		return this._state.name || this._opts.name;
-	}
-	
-	set name( value ) {
+	get wifi() {
 		if( !this._stateSynced )
 			throw new Error('Device not synced');
 			
-		if( typeof value !== 'string' )
-			throw new Error('Invalid type for name, expected: String');
-		
-		this._putQueue['name'] = { value };
-		this._state.name = value;
+		return {
+			ssid: this._state.wifi_ssid,
+			ip_lan: this._state.wifi_ip_lan,
+			ip_ap: this._state.wifi_ip_ap,
+			connected: !!this._state.wifi_connected,
+			ap: !!this._state.wifi_ap
+		};
 	}
 	
 	get mode() {
@@ -93,27 +96,34 @@ class Device {
 		return this._state.mode;
 	}
 	
-	get wifi_ssid() {
-		if( !this._stateSynced )
-			throw new Error('Device not synced');
-			
-		return this._state.wifi_ssid;		
+	/*
+		Read-Write properties
+	*/
+	get name() {
+		return this._state.name || this._opts.name;
 	}
+	
+	set name( value ) {			
+		if( typeof value !== 'string' )
+			throw new Error('Invalid type for name, expected: String');
+		
+		this._putQueue['name'] = { value };
+		this._state.name = value;
+	}
+	
 	
 	get pixels() {
 		return this._state.pixels || this._opts.pixels;
 	}
 	
-	set pixels( value ) {
-		if( !this._stateSynced )
-			throw new Error('Device not synced');
-			
+	set pixels( value ) {			
 		if( typeof value !== 'number' )
 			throw new Error('Invalid type for pixels, expected: Number');
 		
 		this._putQueue['pixels'] = { value };
 		this._state.pixels = value;
 	}
+	
 	
 	get on() {
 		if( typeof this._state.on === 'undefined' )
@@ -122,16 +132,14 @@ class Device {
 		return this._state.on;
 	}
 	
-	set on( value ) {
-		if( !this._stateSynced )
-			throw new Error('Device not synced');
-			
+	set on( value ) {			
 		if( typeof value !== 'boolean' )
 			throw new Error('Invalid type for on, expected: Boolean');
 		
 		this._putQueue['on'] = { value };
 		this._state.on = value;
 	}
+	
 	
 	get brightness() {
 		if( !this._stateSynced )
@@ -140,16 +148,14 @@ class Device {
 		return this._state.brightness;
 	}
 	
-	set brightness( value ) {
-		if( !this._stateSynced )
-			throw new Error('Device not synced');
-			
+	set brightness( value ) {			
 		if( typeof value !== 'number' )
 			throw new Error('Invalid type for brightness, expected: Number');
 		
 		this._putQueue['brightness'] = { value };
 		this._state.brightness = value;
 	}
+	
 	
 	get effect() {
 		if( !this._stateSynced )
@@ -158,10 +164,7 @@ class Device {
 		return this._state.effect;
 	}
 	
-	set effect( value ) {
-		if( !this._stateSynced )
-			throw new Error('Device not synced');
-						
+	set effect( value ) {						
 		if( typeof value !== 'string' )
 			throw new Error('Invalid type for brightness, expected: String');
 					
@@ -172,6 +175,7 @@ class Device {
 		this._state.effect = value;
 	}
 	
+	
 	get gradient() {
 		if( !this._stateSynced )
 			throw new Error('Device not synced');
@@ -179,15 +183,12 @@ class Device {
 		if( this._state.gradient_source === null ) 
 			return null;
 						
-		const colors = this._state.gradient_source.map( color => `#${color}` );
+		const colors = this._state.gradient_source;
 		if( colors.length === 1 ) return colors.concat( colors[0] );
 		return colors;
 	}
 	
-	set gradient( value ) {
-		if( !this._stateSynced )
-			throw new Error('Device not synced');
-			
+	set gradient( value ) {			
 		if( !Array.isArray(value) )
 			throw new Error('Invalid type for gradient, expected: Array');
 			
@@ -208,8 +209,30 @@ class Device {
 		this._state.gradient_pixels = gradientPixels;
 	}
 	
+	
+	set color( value ) {
+		this.gradient = [ value ];
+	}
+	
+	set colorTemperature( value ) {
+		const color = getColorTemperature(value);
+		this.color = color;
+	}
+	
+	
 	async restart() {
 		return this._fetch('restart', { method: 'PUT' });
+	}
+	
+	async getWifiNetworks() {
+		return this._fetch('network');			
+	}
+	
+	async setWifiNetwork({ ssid, pass }) {
+		return this._fetch('network', {
+			method: 'PUT',
+			body: JSON.stringify({ ssid, pass })
+		});		
 	}
 	
 	async sync() {

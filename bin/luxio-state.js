@@ -12,7 +12,7 @@ helpers.getDevices().then( devices => {
 	return devices.forEach( device => {
 		device.sync().then(() => {
 			console.log('');
-			console.log(chalk.bold.white(` ${device.name} `));
+			console.log(chalk.bold.white(` ${device.name} (${device.id})`));
 			
 			let table = new Table({
 				head: [
@@ -30,9 +30,9 @@ helpers.getDevices().then( devices => {
 				device.on ? 'Yes' : 'No',
 				`${Math.round(device.brightness * 100)}%`,
 				device.mode,
-				device.gradient.join(','),
-				device.effect ? device.effect : 'Not active',
-				device.wifi_ssid,
+				device.gradient ? device.gradient.join(',') : '-',
+				device.effect ? device.effect : '-',
+				device.wifi.ssid,
 				device.connectivity,
 			])
 			
@@ -43,4 +43,4 @@ helpers.getDevices().then( devices => {
 			console.error( err.message || err.toString() )
 		})
 	})
-})
+}).catch(console.error);

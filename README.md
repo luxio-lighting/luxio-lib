@@ -4,9 +4,9 @@
 
 This is a JavaScript library to find and control [Luxio](https://luxio.lighting) Wi-Fi LED Strips. This module can be used in the browser or as a React or Node.js dependency.
 
-## Installation
+## Node.js
 
-### Node.js
+### Installation
 
 In your project's folder:
 
@@ -20,61 +20,7 @@ Then include it in your project:
 const { Discovery } = require('luxio');
 ```
 
-### Browser
-
-By using a `<script>` tag:
-
-```html
-<script type="text/javascript" src="./dist/web/luxio.min.js"></script>
-```
-
-Or use a CDN:
-
-```html
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/luxio@latest/dist/web/luxio.min.js"></script>
-```
-
-Or when you're using a pre-compiler such as webpack:
-
-```javascript
-import { Discovery } from 'luxio';
-```
-
-### Command line
-```bash
-$ npm install -g luxio
-```
-
-## Usage
-
-### Command Line
-
-```bash
-$ luxio --help
-
-  Usage: luxio [options] [command]
-
-
-  Options:
-
-    -V, --version  output the version number
-    -h, --help     output usage information
-
-
-  Commands:
-
-    discover    Discover all Luxio devices on your network
-    on          Turn a Luxio device on or off
-    brightness  Set the brightness of a Luxio device
-    gradient    Set a gradient on a Luxio device
-    effect      Set an effect on a Luxio device
-    name        Set the name of a Luxio device
-    pixels      Set the pixel count of a Luxio device
-    restart     Restart a Luxio device
-    help [cmd]  display help for [cmd]
-```
-
-### Node.js
+### Usage
 
 ```javascript
 const Discovery = require('luxio').Discovery;
@@ -111,7 +57,29 @@ discovery.getDevices()
 	.catch( console.error );
 ```
 
-### Browser
+## Browser
+
+### Installation
+
+By using a `<script>` tag:
+
+```html
+<script type="text/javascript" src="./dist/web/luxio.min.js"></script>
+```
+
+Or use a CDN:
+
+```html
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/luxio@latest/dist/web/luxio.min.js"></script>
+```
+
+Or when you're using a pre-compiler such as webpack:
+
+```javascript
+import { Discovery } from 'luxio';
+```
+
+### Usage
 
 ```html
 <script type="text/javascript">
@@ -155,9 +123,57 @@ discovery.getDevices()
 </script>
 ```
 
+## Command line
+
+### Installation
+
+```bash
+$ npm install -g luxio
+```
+
+### Usage
+```bash
+$ luxio --help
+
+  Usage: luxio [options] [command]
+
+
+  Options:
+
+    -V, --version  output the version number
+    -h, --help     output usage information
+
+
+  Commands:
+
+    discover     Discover all Luxio devices on your network
+    state        Get the state
+    on           Turn on
+    off          Turn off
+    brightness   Set the brightness
+    gradient     Set a gradient
+    effect       Set an effect
+    temperature  Set a color temperature
+    name         Set the name
+    pixels       Set the pixel count
+    get-wifi     Get a list of Wi-Fi networks
+    set-wifi     Set the Wi-Fi network
+    restart      Restart a Luxio device
+    help [cmd]   display help for [cmd]
+```
+
+### Examples
+
+```bash
+$ luxio discover
+$ luxio on
+$ luxio effect --id "rainbow"
+$ luxio gradient --colors "#FF0000,#0000FF" --device "Living Room"
+```
+
 ## Notes
 
-* Discovery by default finds devices bothutilizing `https://nupnp.luxio.lighting` and by trying to connect to `http://192.168.4.1` (the Access Point default IP Address).
+* Discovery by default finds devices using two strategies: Cloud discovery (`https://nupnp.luxio.lighting`) and by trying to connect to `http://192.168.4.1` (the Access Point default IP Address).
 
 ## Documentation
 Available at [https://luxio-lighting.github.io/luxio.js/](https://luxio-lighting.github.io/luxio.js/)

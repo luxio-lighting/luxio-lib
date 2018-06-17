@@ -15,10 +15,10 @@ helpers.getDevices().then( devices => {
 		device.brightness = ( parseFloat(cmd.brightness) / 100 );
 		device.on = true;
 		device.sync().then(() => {
-			console.log(`Set device ${device.id} brightness to ${cmd.brightness}%`)
+			console.log(`Set device ${device.name} brightness to ${cmd.brightness}%`)
 		}).catch( err => {
-			console.error(`Could not set device ${device.id} brightness to ${cmd.brightness}%`)			
+			console.error(`Could not set device ${device.name} brightness to ${cmd.brightness}%`)			
 			console.error( err.message || err.toString() )
 		})
 	})
-})
+}).catch(console.error);

@@ -25,9 +25,25 @@ function createGradient({ source, pixels }) {
 				.toUpperCase()
 		})
 }
+	
+/*
+	Get a color temperature, based on cool (0) or warm (1)
+*/
+function getColorTemperature(temperature) {
+	if( temperature < 0 || temperature > 1 )
+		throw new Error('Color Temperature is out of bounds');
+		
+	const gradient = tinygradient('#CCFBFD', '#FFFFFF', '#FFDA73').hsv(99);
+	const color = gradient[Math.floor(temperature*98)];
+	return color
+		.toHexString()
+		.substring(1) // remove #
+		.toUpperCase();
+}
 
 module.exports = {
 	createGradient,
+	getColorTemperature,
 }
 
 if( typeof window !== 'undefined' ) {
