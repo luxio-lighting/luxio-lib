@@ -19,9 +19,14 @@ discovery.getDevices().then( devices => {
 			'Address',
 			'Pixels',
 			'Last seen',
+			'Wi-Fi SSID',
 			'Connectivity',
 		].map(str => chalk.cyan(str))
 	});
+	
+	devices.sort((a, b) => {
+		return b.lastseen - a.lastseen;
+	})
 	
 	devices.forEach( device => { 
 		table.push([
@@ -31,9 +36,10 @@ discovery.getDevices().then( devices => {
 			device.address,
 			device.pixels,
 			timeago().format(device.lastseen),
+			device.wifiSsid,
 			device.connectivity,
 		].map(prop => {
-			if( typeof prop === 'undefined' )
+			if( typeof prop === 'undefined' || prop === null )
 				return '-';
 				
 			try {

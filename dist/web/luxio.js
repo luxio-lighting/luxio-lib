@@ -9376,6 +9376,11 @@ var Device = function () {
 			return this._opts.address;
 		}
 	}, {
+		key: 'wifiSsid',
+		get: function get() {
+			return this._opts.wifi_ssid;
+		}
+	}, {
 		key: 'wifi',
 		get: function get() {
 			if (!this._stateSynced) throw new Error('Device not synced');

@@ -77,6 +77,10 @@ class Device {
 		return this._opts.address;
 	}
 	
+	get wifiSsid() {
+		return this._opts.wifi_ssid;
+	}
+	
 	get wifi() {
 		if( !this._stateSynced )
 			throw new Error('Device not synced');
