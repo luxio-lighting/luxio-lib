@@ -76,7 +76,7 @@ By using a `<script>` tag:
 Or use a CDN:
 
 ```html
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/luxio@latest/dist/web/luxio.min.js"></script>
+<script type="text/javascript" src="https://unpkg.com/luxio@latest/dist/web/luxio.min.js"></script>
 ```
 
 Or when you're using a pre-compiler such as webpack:
