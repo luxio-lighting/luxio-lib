@@ -2,8 +2,9 @@
 
 const fs = require('fs');
 
-if( fs.existsSync('./.git') ) {
-	module.exports = require('./src');
-} else {
+// if project has been built, and there is no .git folder (development)
+if( fs.existsSync('./dist') && !fs.existsSync('./.git') ) {
 	module.exports = require('./dist/js');
+} else {
+	module.exports = require('./src');
 }
