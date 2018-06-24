@@ -25,7 +25,7 @@ class Device {
 			Object.defineProperty(this._opts, key, {
 				value: opts[key],
 				enumerable: true,
-				writable: false,
+				writable: true,
 			});			
 		}		
 		
@@ -75,6 +75,10 @@ class Device {
 	
 	get address() {
 		return this._opts.address;
+	}
+	
+	set address(value) {
+		this._opts.address = value;
 	}
 	
 	get wifiSsid() {

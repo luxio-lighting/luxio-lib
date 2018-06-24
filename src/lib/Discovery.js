@@ -1,16 +1,20 @@
 'use strict';
 
 const { nupnpAddress, apAddress, minimumVersion } = require('../config');
-const { fetch } = require('../util');
+const { fetch, timeoutRace } = require('../util');
 
 const Device = require('./Device.js');
 
 class Discovery {
 	
+	constructor() {
+		this._devices = {};
+	}
+	
 	async getDevices({ ap = true, nupnp = true, timeout } = {}) {
 		const fns = [];
-		if( ap ) fns.push( this.getAPDevices({ timeout }) );
-		if( nupnp ) fns.push( this.getNupnpDevices() );
+		if( ap ) fns.push( this._getAPDevices({ timeout }) );
+		if( nupnp ) fns.push( this._getNupnpDevices() );
 		
 		const deviceIds = [];
 		return Promise.all(fns).then(results => {
@@ -18,23 +22,35 @@ class Discovery {
 				if( deviceIds.includes(device.id) ) return false;
 				deviceIds.push(device.id);
 				return true;
+			}).map(device => {
+				this._onDevice(device);
+				return device;
+			}).map(device => {
+				return this._devices[device.id];
 			});
 		})
 	}
 	
-	async getAPDevices({ timeout = 2500 } = {}) {
+	_onDevice( device ) {
+		const { id, address } = device;
+		if( this._devices[id] ) {
+			this._devices[id].address = address;
+		} else {
+			this._devices[id] = device;
+		}
+	}
+	
+	async _getAPDevices({ timeout = 2500 } = {}) {
 		try {
-			const res = await Promise.race([
-				fetch(`http://${apAddress}/state`, { timeout }),
-				new Promise((resolve, reject) => {
-					setTimeout(() => {
-						reject(new Error('Timeout'));
-					}, timeout);
-				}),
-			]);
-			if( !res.ok ) throw new Error('unknown_error');
+			const req = fetch(`http://${apAddress}/state`, { timeout });
+			const res = await timeoutRace(req, timeout);
+			if( !res.ok )
+				throw new Error('unknown_error');
+			
 			const json = await res.json();
-			if( json.version < minimumVersion ) return [];
+			if( json.version < minimumVersion )
+				return [];
+				
 			const device = new Device(json.id, {
 				...json,
 				type: 'luxio',
@@ -47,7 +63,7 @@ class Discovery {
 		}
 	}
 	
-	async getNupnpDevices({} = {}) {
+	async _getNupnpDevices({} = {}) {
 		const res = await fetch(nupnpAddress);
 		const devices = await res.json();
 		return Object.keys(devices).filter(deviceId => {
