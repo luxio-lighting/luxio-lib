@@ -1,10 +1,7 @@
 'use strict';
 
-const fs = require('fs');
-
-// if project has been built, and there is no .git folder (development)
-if( fs.existsSync('./dist') && !fs.existsSync('./.git') ) {
+try {
 	module.exports = require('./dist/js');
-} else {
+} catch( err ) {
 	module.exports = require('./src');
 }
