@@ -4,7 +4,7 @@ const cmd = require('commander')
 const timeago = require('timeago.js');
 const Table = require('cli-table');
 const chalk = require('chalk');
-const Discovery = require('..').Discovery;
+const { Discovery } = require('..');
 
 cmd.parse(process.argv)
 	
@@ -28,7 +28,7 @@ discovery.getDevices().then( devices => {
 		return b.lastseen - a.lastseen;
 	})
 	
-	devices.forEach( device => { 
+	devices.forEach(device => { 
 		table.push([
 			device.id,
 			device.name,

@@ -70,7 +70,7 @@ class Device {
 	}
 	
 	get lastseen() {
-		return new Date(this._opts.lastseen * 1000);
+		return this._opts.lastseen;
 	}
 	
 	get address() {

@@ -12,12 +12,11 @@ class Discovery {
 	}
 	
 	async getDevices({ ap = true, nupnp = true, timeout } = {}) {
-		const fns = [];
-		if( ap ) fns.push( this._getAPDevices({ timeout }) );
-		if( nupnp ) fns.push( this._getNupnpDevices() );
-		
 		const deviceIds = [];
-		return Promise.all(fns).then(results => {
+		return Promise.all([
+  		ap && this._getAPDevices({ timeout }),
+  		nupnp && this._getNupnpDevices({ timeout }),
+		]).then(results => {
 			return [].concat(...results).filter(device => {
 				if( deviceIds.includes(device.id) ) return false;
 				deviceIds.push(device.id);
@@ -55,7 +54,7 @@ class Discovery {
 				...json,
 				type: 'luxio',
 				address: apAddress,
-				lastseen: Date.now() / 1000,
+				lastseen: new Date(),
 			});
 			return [ device ];
 		} catch( err ) {
@@ -63,17 +62,30 @@ class Discovery {
 		}
 	}
 	
-	async _getNupnpDevices({} = {}) {
-		const res = await fetch(nupnpAddress);
-		const devices = await res.json();
-		return Object.keys(devices).filter(deviceId => {
-			const device = devices[deviceId];
-			if( device.version < minimumVersion ) return false;
-			return true;			
-		}).map(deviceId => {
-			const device = devices[deviceId];
-			return new Device(deviceId, device);
-		})
+	async _getNupnpDevices({ timeout = 2500 } = {}) {
+		try {
+  		const req = fetch(nupnpAddress);
+			const res = await timeoutRace(req, timeout);
+			if( !res.ok )
+				throw new Error('unknown_error');
+			
+  		const devices = await res.json();
+  		
+  		return Object.keys(devices).filter(deviceId => {
+  			const device = devices[deviceId];
+  			if( device.version < minimumVersion ) return false;
+  			return true;
+  		}).map(deviceId => {
+  			const device = devices[deviceId];
+  			device.lastseen = new Date(device.lastseen);
+  			return new Device(deviceId, {
+    			...device,
+    			lastseen: new Date(device.lastseen),
+  			});
+  		})
+		} catch( err ) {
+  		return [];
+		}
 	}
 	
 }
