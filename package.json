@@ -26,6 +26,8 @@
 		"url": "https://github.com/luxio-lighting/luxio.js"
 	},
 	"dependencies": {
+		"eventsource": "^2.0.2",
+		"mdns-js": "^1.0.3",
 		"tinygradient": "^0.3.1"
 	}
 }
