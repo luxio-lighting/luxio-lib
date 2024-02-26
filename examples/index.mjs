@@ -26,12 +26,9 @@ discovery.discoverDevices({
 				console.log('-- Mode:', device.mode);
 				console.log('');
 
-				device.on = true;
-				device.brightness = 1;
-				device.gradient = ['#FF0000', '#0000FF'];
-				device.effect = 'rainbow';
-
-				await device.sync();
+				await device.setOn({ on: true });
+				await device.setBrightness({ brightness: 255 });
+				await device.setGradient({ gradient: ['#00FF00', '#0000FF'] });
 			} catch (err) {
 				console.error(device.id, err);
 			}
