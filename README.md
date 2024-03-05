@@ -130,6 +130,15 @@ discovery.getDevices()
 
 *Note: Luxio commands are sent to a local IP address over HTTP. When visiting an HTTPS website, this is not allowed due to security risks.*
 
+## React Native
+
+### Installation
+
+```bash
+$ npm i react-native-event-source
+$ npm i @luxio-lighting/lib
+```
+
 ## Notes
 
 Device discovery by default finds devices using two strategies: 

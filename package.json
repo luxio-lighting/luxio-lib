@@ -16,7 +16,8 @@
 		"build-js": "rm -r ./dist/js > /dev/null 2>&1; mkdir dist/js; babel ./src --presets babel-preset-env --out-dir ./dist/js --copy-files",
 		"build": "npm run clean; npm run build-js; npm run build-web;",
 		"clean": "rm -r ./dist > /dev/null 2>&1; mkdir ./dist",
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"publish": "npm publish"
 	},
 	"author": "Emile Nijssen",
 	"license": "GPL-3.0",
