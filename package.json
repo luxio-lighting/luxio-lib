@@ -24,7 +24,7 @@
 		"type": "git",
 		"url": "https://github.com/luxio-lighting/luxio.js"
 	},
-	"dependencies": {
+	"peerDependencies": {
 		"eventsource": "^2.0.2",
 		"mdns-js": "^1.0.3",
 		"react-native-sse": "^1.2.1"
