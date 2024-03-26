@@ -26,6 +26,7 @@
 	},
 	"dependencies": {
 		"eventsource": "^2.0.2",
-		"mdns-js": "^1.0.3"
+		"mdns-js": "^1.0.3",
+		"react-native-sse": "^1.2.1"
 	}
 }
