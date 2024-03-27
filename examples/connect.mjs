@@ -1,8 +1,11 @@
+import EventSource from 'eventsource';
 import {
   LuxioDiscovery,
 } from '../index.mjs';
 
-const discovery = new LuxioDiscovery();
+const discovery = new LuxioDiscovery({
+  EventSource,
+});
 discovery.setDebugEnabled(true);
 
 const devices = await discovery.discoverDevices();
