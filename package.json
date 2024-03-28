@@ -25,6 +25,7 @@
 		"url": "https://github.com/luxio-lighting/luxio.js"
 	},
 	"devDependencies": {
-		"eventsource": "^2.0.2"
+		"eventsource": "^2.0.2",
+		"ws": "^8.16.0"
 	}
 }

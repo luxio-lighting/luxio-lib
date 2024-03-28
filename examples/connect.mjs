@@ -1,11 +1,11 @@
-import EventSource from 'eventsource';
+import WebSocket from 'ws';
 import {
   LuxioDiscovery,
 } from '../index.mjs';
 
-const discovery = new LuxioDiscovery({
-  EventSource,
-});
+global.WebSocket = WebSocket;
+
+const discovery = new LuxioDiscovery();
 discovery.setDebugEnabled(true);
 
 const devices = await discovery.discoverDevices();
