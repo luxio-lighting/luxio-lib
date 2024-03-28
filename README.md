@@ -9,7 +9,7 @@ This is a JavaScript library and API client to discover and control [Luxio](http
 ### Node.js
 
 ```bash
-$ npm i mdns-js eventsource
+$ npm i mdns-js ws
 $ npm i @luxio-lighting/lib
 ```
 
@@ -17,12 +17,14 @@ Then include it in your project:
 
 ```javascript
 import { LuxioDiscovery } from '@luxio-lighting/lib';
+import WebSocket from 'ws';
+
+global.WebSocket = WebSocket;
 ```
 
 ### React Native
 
 ```bash
-$ npm i react-native-sse
 $ npm i @luxio-lighting/lib
 ```
 
