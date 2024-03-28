@@ -1,7 +1,7 @@
 {
 	"name": "@luxio-lighting/lib",
 	"type": "module",
-	"version": "2.2.1",
+	"version": "2.2.2",
 	"description": "Luxio Library written in JavaScript",
 	"main": "index.mjs",
 	"files": [
